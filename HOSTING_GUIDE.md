@@ -264,12 +264,13 @@ Proxied: Yes
 ## Quick Command Reference
 
 ### Deploy to GitHub Pages
-```bash
-# Initial setup
-git init
 
-# Add only necessary files (exclude LaTeX files if not needed)
-git add index.html style.css script.js README.md HOSTING_GUIDE.md .gitignore
+**Option 1: Deploy only the web portfolio** (Recommended)
+```bash
+# Initial setup - from the web folder
+cd /Users/ignatiusdevilliers/Development/IT_de_Villiers___CV/web
+git init
+git add index.html style.css script.js
 git commit -m "Initial commit: Modern portfolio"
 git branch -M main
 git remote add origin https://github.com/iggydv/iggydv.github.io.git
@@ -282,16 +283,31 @@ git commit -m "Add custom domain"
 git push
 
 # Future updates
-git add index.html style.css script.js  # Add only files you changed
+git add index.html style.css script.js
 git commit -m "Update portfolio content"
 git push
 ```
 
-**Note**: The repository only needs `index.html`, `style.css`, `script.js`, and `CNAME` to work on GitHub Pages. The LaTeX files (`template.tex`, etc.) can be kept in a separate branch or excluded.
+**Option 2: Deploy entire project**
+```bash
+# From project root
+git init
+git add web/ README.md HOSTING_GUIDE.md .gitignore
+git commit -m "Initial commit: Portfolio project"
+git branch -M main
+git remote add origin https://github.com/iggydv/portfolio.git
+git push -u origin main
+
+# Then configure GitHub Pages to serve from /web folder:
+# Settings → Pages → Source: /web folder
+```
+
+**Note**: For GitHub Pages to work at `iggydv.github.io`, you only need the files from the `web/` folder. The LaTeX CV files in `latex-cv/` can stay in your local repository or be pushed to a separate branch.
 
 ### Test Locally
 ```bash
-# Simple HTTP server
+# From the web folder
+cd /Users/ignatiusdevilliers/Development/IT_de_Villiers___CV/web
 python3 -m http.server 8000
 # Open http://localhost:8000
 

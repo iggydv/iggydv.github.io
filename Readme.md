@@ -57,33 +57,40 @@ A beautiful, interactive portfolio website featuring glassmorphism design, disco
 
 ```
 IT_de_Villiers___CV/
-├── index.html              # Main portfolio webpage
-├── style.css               # Glassmorphism styles, animations, print styles
-├── script.js               # Interactive features, GitHub API, discovery mechanics
-├── README.md               # Project documentation
-├── HOSTING_GUIDE.md        # Step-by-step hosting guide for iggydv.me
 │
-├── template.tex            # LaTeX CV template (alternative format)
-├── friggeri-cv.cls         # LaTeX class file
-├── bibliography.bib        # LaTeX bibliography
-├── publications.bib        # LaTeX publications
-├── template.pdf            # Generated PDF from LaTeX
-├── retro-cv-readme.md      # Previous retro theme documentation
+├── web/                    # Modern Web Portfolio
+│   ├── index.html         # Main portfolio webpage
+│   ├── style.css          # Glassmorphism styles, animations, print styles
+│   └── script.js          # Interactive features, GitHub API, discovery mechanics
 │
-└── template.aux/log/out    # LaTeX build files (can be ignored)
+├── latex-cv/              # LaTeX CV (Alternative Format)
+│   ├── template.tex       # LaTeX CV source
+│   ├── friggeri-cv.cls    # LaTeX class file
+│   ├── bibliography.bib   # Bibliography references
+│   ├── publications.bib   # Publications list
+│   ├── template.pdf       # Generated PDF
+│   └── *.aux/log/out      # Build files (ignored by git)
+│
+├── README.md              # Project documentation
+├── HOSTING_GUIDE.md       # Step-by-step hosting guide for iggydv.me
+├── .gitignore            # Git ignore rules
+└── retro-cv-readme.md    # Previous theme documentation
 ```
 
-### Main Files
+### Web Portfolio (`web/`)
 
-- **index.html** - Modern glassmorphism portfolio with discovery mechanics
-- **style.css** - Complete styling including responsive design and print optimization
-- **script.js** - GitHub integration, interactive features, download functionality
-- **HOSTING_GUIDE.md** - Complete guide for hosting on custom domain
-- **README.md** - Project documentation and usage guide
+Modern, interactive glassmorphism portfolio with:
+- **index.html** - Discovery mechanics, responsive design
+- **style.css** - iOS-inspired styling, print optimization
+- **script.js** - GitHub integration, animations, download functionality
 
-### Legacy Files
+### LaTeX CV (`latex-cv/`)
 
-The `template.tex` and related LaTeX files are from a previous CV format and can be kept for reference or removed if not needed.
+Traditional academic CV format:
+- **template.tex** - LaTeX source file
+- **template.pdf** - Compiled PDF output
+
+Both formats showcase the same professional experience and can be used for different contexts.
 
 ## 🚀 Getting Started
 
@@ -92,24 +99,25 @@ The `template.tex` and related LaTeX files are from a previous CV format and can
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/iggydv/portfolio.git
-   cd portfolio
+   cd portfolio/web
    ```
 
 2. **Open in browser**:
    - Simply open `index.html` in your browser
    - Or use a local server:
      ```bash
+     # From the web folder
      python3 -m http.server 8000
      # Visit http://localhost:8000
      ```
 
 3. **Customize**:
-   - Update personal information in `index.html`
-   - Change GitHub username in `script.js` (line 11):
+   - Update personal information in `web/index.html`
+   - Change GitHub username in `web/script.js` (line 11):
      ```javascript
      const GITHUB_USERNAME = 'iggydv';
      ```
-   - Adjust colors in `style.css` (`:root` variables)
+   - Adjust colors in `web/style.css` (`:root` variables)
 
 ### Deploy to GitHub Pages
 
@@ -141,7 +149,7 @@ Then enable GitHub Pages in repository settings.
 
 ### Change Colors
 
-Edit CSS variables in `style.css`:
+Edit CSS variables in `web/style.css`:
 ```css
 :root {
     --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -153,18 +161,18 @@ Edit CSS variables in `style.css`:
 
 ### Update Content
 
-All content is in `index.html`. Key sections:
+All content is in `web/index.html`. Key sections:
 - Lines 26-50: Header and personal info
 - Lines 59-107: Contact and Education
 - Lines 109-161: Skills
 - Lines 164-173: GitHub projects (auto-populated)
 - Lines 177-292: Work experience
-- Lines 289-359: Notable projects
-- Lines 361-376: Leadership
+- Lines 289-346: Notable projects
+- Lines 349-376: Leadership
 
 ### Modify GitHub Integration
 
-In `script.js`:
+In `web/script.js`:
 ```javascript
 // Line 11: Change username
 const GITHUB_USERNAME = 'iggydv';

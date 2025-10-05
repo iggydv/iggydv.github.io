@@ -1,4 +1,17 @@
-# LaTeX build files
+# LaTeX build files (in latex-cv folder)
+latex-cv/*.aux
+latex-cv/*.log
+latex-cv/*.out
+latex-cv/*.bcf
+latex-cv/*.run.xml
+latex-cv/*.synctex.gz
+latex-cv/*.fls
+latex-cv/*.fdb_latexmk
+latex-cv/*.toc
+latex-cv/*.lof
+latex-cv/*.lot
+
+# LaTeX build files (if in root)
 *.aux
 *.log
 *.out
@@ -7,9 +20,6 @@
 *.synctex.gz
 *.fls
 *.fdb_latexmk
-*.toc
-*.lof
-*.lot
 
 # macOS
 .DS_Store
