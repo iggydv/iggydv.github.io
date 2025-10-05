@@ -34,6 +34,56 @@ body {
     color: var(--text-dark);
     overflow-x: hidden;
     min-height: 100vh;
+    cursor: none;
+}
+
+/* Custom Cursor */
+.custom-cursor {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+}
+
+/* Cursor Trail Effect - Streaky Paint Style */
+.cursor-trail {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, 
+        rgba(102, 126, 234, 0.8) 0%, 
+        rgba(118, 75, 162, 0.6) 40%,
+        rgba(240, 147, 251, 0.3) 100%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0.9;
+    animation: fadeStreak 0.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+    filter: blur(1px);
+    mix-blend-mode: screen;
+}
+
+@keyframes fadeStreak {
+    0% {
+        opacity: 0.9;
+        transform: scale(1) translateY(0);
+        filter: blur(1px);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8) translateY(2px);
+        filter: blur(2px);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.4) translateY(4px);
+        filter: blur(3px);
+    }
 }
 
 /* Animated Gradient Background */
@@ -879,6 +929,55 @@ body {
     box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
 }
 
+/* Spotify Section */
+.spotify-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.spotify-link {
+    display: block;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.spotify-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.spotify-link iframe {
+    display: block;
+}
+
+.spotify-footer {
+    text-align: center;
+}
+
+.spotify-profile-link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.spotify-profile-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateX(4px);
+}
+
 .download-button {
     background: var(--success-gradient);
     box-shadow: 0 8px 24px rgba(67, 233, 123, 0.4);
@@ -1005,8 +1104,16 @@ html {
     /* Hide only interactive/animated elements */
     .discovery-progress,
     .download-button,
-    #particles-canvas {
+    #particles-canvas,
+    .custom-cursor,
+    .cursor-trail,
+    .spotify-container {
         display: none !important;
+    }
+    
+    /* Restore default cursor for print */
+    body {
+        cursor: default !important;
     }
     
     /* Force print all colors and backgrounds exactly as shown */

@@ -54,4 +54,4 @@ This is an alternative format to the modern web portfolio. Both showcase the sam
 
 ---
 
-For the modern web version, see the [web/](../web/) directory.
+For the modern web version, see the files in the [project root](../) (index.html, style.css, script.js).

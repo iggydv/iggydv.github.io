@@ -11,9 +11,66 @@ let discoveryState = {
 const GITHUB_USERNAME = 'iggydv';
 const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos`;
 
+// Bot Detection and Protection
+function initBotProtection() {
+    // Detect headless browsers and bots
+    const isBot = /bot|crawler|spider|crawling|headless|phantom|slurp|scraper/i.test(navigator.userAgent);
+    const hasWebDriver = navigator.webdriver;
+    const hasPlugins = navigator.plugins.length === 0;
+    const hasLanguages = navigator.languages.length === 0;
+    
+    // Bot score (higher = more likely a bot)
+    let botScore = 0;
+    if (isBot) botScore += 3;
+    if (hasWebDriver) botScore += 2;
+    if (hasPlugins && hasLanguages) botScore += 1;
+    
+    // If likely malicious bot, add honeypot
+    if (botScore >= 3) {
+        const honeypot = document.createElement('a');
+        honeypot.href = '/admin-login';
+        honeypot.style.display = 'none';
+        honeypot.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(honeypot);
+    }
+    
+    return botScore < 3; // Return false if definitely a bot
+}
+
+// Rate limiting for API calls
+const rateLimiter = {
+    calls: [],
+    maxCalls: 10,
+    timeWindow: 60000, // 1 minute
+    
+    canMakeCall() {
+        const now = Date.now();
+        this.calls = this.calls.filter(time => now - time < this.timeWindow);
+        
+        if (this.calls.length >= this.maxCalls) {
+            console.warn('Rate limit exceeded. Please wait before making more requests.');
+            return false;
+        }
+        
+        this.calls.push(now);
+        return true;
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
-    initPortfolio();
-    initCompanyLogoFallbacks();
+    const isHuman = initBotProtection();
+    
+    if (isHuman) {
+        initPortfolio();
+        initCompanyLogoFallbacks();
+        initCustomCursor();
+    } else {
+        // Render basic content for bots without interactive features
+        document.querySelectorAll('.discoverable').forEach(section => {
+            section.classList.add('discovered');
+            section.style.filter = 'none';
+        });
+    }
 });
 
 function initPortfolio() {
@@ -229,6 +286,12 @@ function loadDiscoveryState() {
 // GitHub Projects Integration
 async function loadGitHubProjects() {
     const container = document.getElementById('github-projects');
+    
+    // Check rate limit before making API call
+    if (!rateLimiter.canMakeCall()) {
+        container.innerHTML = '<div class="github-loading">Rate limit reached. Please refresh in a moment.</div>';
+        return;
+    }
     
     try {
         const response = await fetch(GITHUB_API_URL + '?sort=updated&per_page=20');
@@ -611,6 +674,110 @@ function initDownloadButton() {
             window.print();
         }, 300);
     });
+}
+
+// Custom Cursor with Paint Trail
+function initCustomCursor() {
+    // Create custom cursor
+    const cursor = document.createElement('div');
+    cursor.className = 'custom-cursor';
+    document.body.appendChild(cursor);
+    
+    let mouseX = 0;
+    let mouseY = 0;
+    let cursorX = 0;
+    let cursorY = 0;
+    
+    // Track mouse position
+    document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        
+        // Create trail dot
+        createTrailDot(e.clientX, e.clientY);
+    });
+    
+    // Smooth cursor follow
+    function updateCursor() {
+        // Smooth easing
+        cursorX += (mouseX - cursorX) * 0.15;
+        cursorY += (mouseY - cursorY) * 0.15;
+        
+        cursor.style.left = cursorX - 10 + 'px';
+        cursor.style.top = cursorY - 10 + 'px';
+        
+        requestAnimationFrame(updateCursor);
+    }
+    updateCursor();
+    
+    // Scale cursor on click
+    document.addEventListener('mousedown', () => {
+        cursor.style.transform = 'scale(0.8)';
+    });
+    
+    document.addEventListener('mouseup', () => {
+        cursor.style.transform = 'scale(1)';
+    });
+    
+    // Hide cursor when leaving window
+    document.addEventListener('mouseleave', () => {
+        cursor.style.opacity = '0';
+    });
+    
+    document.addEventListener('mouseenter', () => {
+        cursor.style.opacity = '1';
+    });
+}
+
+// Create paint trail dots with velocity tracking
+let lastTrailTime = 0;
+let lastX = 0;
+let lastY = 0;
+const trailDelay = 15; // milliseconds between trail dots (reduced for smoother trail)
+
+function createTrailDot(x, y) {
+    const now = Date.now();
+    
+    // Throttle trail creation
+    if (now - lastTrailTime < trailDelay) {
+        return;
+    }
+    
+    // Calculate velocity for streaky effect
+    const dx = x - lastX;
+    const dy = y - lastY;
+    const velocity = Math.sqrt(dx * dx + dy * dy);
+    
+    lastTrailTime = now;
+    lastX = x;
+    lastY = y;
+    
+    const dot = document.createElement('div');
+    dot.className = 'cursor-trail';
+    dot.style.left = x - 6 + 'px';
+    dot.style.top = y - 6 + 'px';
+    
+    // Size based on velocity for paint-like effect
+    const baseSize = 10;
+    const velocityScale = Math.min(velocity / 10, 3); // Scale based on speed
+    const size = baseSize + velocityScale + Math.random() * 4;
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    
+    // Vary opacity based on velocity (faster = more opaque)
+    const opacity = 0.7 + Math.min(velocity / 50, 0.3);
+    dot.style.opacity = opacity;
+    
+    // Add slight rotation for organic feel
+    const rotation = Math.random() * 360;
+    dot.style.transform = `rotate(${rotation}deg)`;
+    
+    document.body.appendChild(dot);
+    
+    // Remove dot after animation completes (0.5s)
+    setTimeout(() => {
+        dot.remove();
+    }, 500);
 }
 
 // Console Easter Egg
