@@ -201,39 +201,99 @@ function revealAllSections(silent = false) {
 }
 
 function showCelebration() {
-    // Create confetti effect
-    for (let i = 0; i < 50; i++) {
-        createConfetti();
+    // Create elegant particle effect - staggered release
+    for (let i = 0; i < 80; i++) {
+        setTimeout(() => createConfetti(), i * 15); // Staggered for smooth effect
     }
 }
 
 function createConfetti() {
-    const confetti = document.createElement('div');
-    confetti.style.position = 'fixed';
-    confetti.style.width = '10px';
-    confetti.style.height = '10px';
-    confetti.style.background = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'][Math.floor(Math.random() * 5)];
-    confetti.style.left = Math.random() * window.innerWidth + 'px';
-    confetti.style.top = '-10px';
-    confetti.style.borderRadius = '50%';
-    confetti.style.zIndex = '10000';
-    confetti.style.pointerEvents = 'none';
+    const particle = document.createElement('div');
     
-    document.body.appendChild(confetti);
+    // Varied particle types for elegance
+    const types = ['circle', 'square', 'line', 'star'];
+    const type = types[Math.floor(Math.random() * types.length)];
     
-    const duration = 3000;
-    const distance = window.innerHeight + 10;
+    // Elegant color palette
+    const colors = [
+        'rgba(102, 126, 234, 0.8)',   // Primary blue
+        'rgba(118, 75, 162, 0.8)',    // Purple
+        'rgba(240, 147, 251, 0.8)',   // Pink
+        'rgba(255, 255, 255, 0.9)'    // White sparkle
+    ];
     
-    confetti.animate([
-        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-        { transform: `translateY(${distance}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+    const size = Math.random() * 6 + 3; // 3-9px
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const startX = Math.random() * window.innerWidth;
+    const drift = (Math.random() - 0.5) * 200; // Subtle horizontal drift
+    
+    // Base styles
+    particle.style.position = 'fixed';
+    particle.style.left = startX + 'px';
+    particle.style.top = '-20px';
+    particle.style.zIndex = '10000';
+    particle.style.pointerEvents = 'none';
+    
+    // Shape-specific styling
+    if (type === 'circle') {
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.borderRadius = '50%';
+        particle.style.background = color;
+        particle.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+    } else if (type === 'square') {
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.background = color;
+        particle.style.borderRadius = '2px';
+        particle.style.boxShadow = `0 0 ${size}px ${color}`;
+    } else if (type === 'line') {
+        particle.style.width = size * 2 + 'px';
+        particle.style.height = '2px';
+        particle.style.background = color;
+        particle.style.boxShadow = `0 0 ${size}px ${color}`;
+    } else if (type === 'star') {
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.background = color;
+        particle.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+        particle.style.boxShadow = `0 0 ${size * 3}px ${color}`;
+    }
+    
+    document.body.appendChild(particle);
+    
+    // Elegant animation with physics
+    const duration = 2000 + Math.random() * 1500; // 2-3.5s
+    const fallDistance = window.innerHeight + 50;
+    const rotation = (Math.random() - 0.5) * 360;
+    const scale = Math.random() * 0.5 + 0.5; // 0.5-1
+    
+    particle.animate([
+        { 
+            transform: 'translateY(0) translateX(0) rotate(0deg) scale(1)', 
+            opacity: 0 
+        },
+        { 
+            transform: `translateY(${fallDistance * 0.3}px) translateX(${drift * 0.3}px) rotate(${rotation * 0.3}deg) scale(${scale})`, 
+            opacity: 1,
+            offset: 0.1
+        },
+        { 
+            transform: `translateY(${fallDistance * 0.7}px) translateX(${drift * 0.7}px) rotate(${rotation * 0.7}deg) scale(${scale})`, 
+            opacity: 0.8,
+            offset: 0.6
+        },
+        { 
+            transform: `translateY(${fallDistance}px) translateX(${drift}px) rotate(${rotation}deg) scale(0.3)`, 
+            opacity: 0 
+        }
     ], {
         duration: duration,
         easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
     });
     
     setTimeout(() => {
-        confetti.remove();
+        particle.remove();
     }, duration);
 }
 
@@ -577,9 +637,9 @@ function activateEasterEgg() {
     // Reveal all sections instantly
     revealAllSections();
     
-    // Extra celebration
-    for (let i = 0; i < 100; i++) {
-        setTimeout(() => createConfetti(), i * 30);
+    // Extra celebration - elegant particle burst
+    for (let i = 0; i < 150; i++) {
+        setTimeout(() => createConfetti(), i * 20);
     }
     
     // Show message
