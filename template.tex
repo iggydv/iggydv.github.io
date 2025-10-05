@@ -1,0 +1,334 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Friggeri Resume/CV
+% XeLaTeX Template
+% Version 1.2 (3/5/15)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Adrien Friggeri (adrien@friggeri.net)
+% https://github.com/afriggeri/CV
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+% Important notes:
+% This template needs to be compiled with XeLaTeX and the bibliography, if used,
+% needs to be compiled with biber rather than bibtex.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[]{friggeri-cv} % Add 'print' as an option into the square bracket to remove colors from this template for printing
+
+\addbibresource{bibliography.bib} % Specify the bibliography file to include publications
+%------------
+\usepackage{enumitem}
+\usepackage{mathptmx}
+\usepackage{nicefrac}
+\usepackage{tikz}
+% \usepackage{emoji} % Requires LuaTeX, commented out for XeLaTeX compatibility
+\usetikzlibrary{calc}
+\renewenvironment{entrylist}{%
+  \begin{itemize}[leftmargin=1in]%[leftmargin=*,align=left,itemindent=-\dimexpr\labelwidth+\labelindent+\labelsep\relax]
+}{%
+  \end{itemize}
+}
+\renewcommand{\bfseries}{\headingfont\color{headercolor}}
+% \renewcommand{\entry}[4]{%
+%   \item[#1]
+%     \textbf{#2}%
+%     \hfill%
+%     {\footnotesize\addfontfeature{Color=lightgray} #3}\\%
+%     #4\vspace{\parsep}%
+%   }
+\renewcommand{\entry}[4]{%
+  \textbf{#1} \\
+\textbf{#2}%
+    \hfill%
+    {\footnotesize\addfontfeature{Color=lightgray} #3}\\%
+    #4\vspace{\parsep}%
+}
+\newcommand{\RomanNumeralCaps}[1]{\MakeUppercase{\romannumeral #1}}
+  
+\usepackage{fontspec}
+\usepackage{fontawesome5}
+
+%-------
+\begin{document}
+\header{Iggy}{ de Villiers}{Senior Software Engineer (MEng)} % Your name and current job title/field
+%----------------------------------------------------------------------------------------
+%	SIDEBAR SECTION
+%----------------------------------------------------------------------------------------
+\begin{aside} % In the aside, each new line forces a line break
+\section{Contact}
+Utrecht
+The Netherlands
+~
+(+31) 68 2212 698
+\href{iggydv12@gmail.com}{iggydv12@gmail.com}
+\href{https://github.com/iggydv}{git://iggydv} \faGithub
+\href{https://gitlab.com/users/iggydv12/projects}{git-lab://ignatius} \faGitlab
+\href{https://www.linkedin.com/in/ignatius-de-villiers-11324b133}{LinkedIn} \faLinkedin
+\section{Languages}
+English (Fluent)
+Afrikaans (Fluent)
+Dutch (Conversational)
+\section{Programming Languages}
+{\color{blue} $\varheartsuit$}Golang, {\color{purple} $\varheartsuit$}Java, {\color{green} $\varheartsuit$}Python, {\color{orange} $\varheartsuit$}Ruby, Kotlin, C, Javascript, Bash, SQL
+\section{DevOps}
+Docker, Kubernetes, Terraform, Site Reliability Engineering (SRE)
+\section{Cloud Experience}
+Amazon Web Services (AWS), Google Cloud Platform (GCP) 
+\section{Main Technologies}
+MySQL, PostgreSQL, NoSQL, MongoDB, RDS, Redis, SQS, SNS, HTTP, gRPC, OpenAPI, Maven, Gradle, Spring Boot, Apache Tomcat, Github, Gitlab, Datadog, Prometheus, Apache ZooKeeper
+\end{aside}
+%----------------------------------------------------------------------------------------
+%	PERSONAL INFO SECTION
+%----------------------------------------------------------------------------------------
+\newline
+\begin{minipage}[t]{0.2\textwidth}
+    \textbf{Date of Birth:}\\
+    \textbf{Nationality:}\\
+    \textbf{Residency:}\\
+\end{minipage}% 
+%
+\begin{minipage}[t]{0.5\textwidth}
+    31 March 1994\\
+    Dutch\\
+    The Netherlands
+\end{minipage}%
+\newline
+
+I'm a curious, enthusiastic, collaborative engineer with \textbf{7+ years} of experience. I'm a lifelong learner and sharing knowledge is my thing. I have a passion for technology, people, and the processes that bring them all together. I have a strong strategic sense and I love solving complex problems with simple solutions, without compromising on the performance and scalability.
+
+%----------------------------------------------------------------------------------------
+%	EDUCATION SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Education}
+
+%------------------------------------------------
+
+\entry
+{2018 $\rightarrow$ 2021}
+{\normalfont MEng [cum laude] (Electronic Engineering)}
+{University of Stellenbosch}
+{\textbf{Thesis: Nomad - A P2P Distributed Storage network for MMVEs} \\
+Development Stack:\\
+\begin{minipage}[t]{0.45\textwidth}
+  \begin{itemize}
+      \item Java
+      \item Python
+      \item SQL
+      \item gRPC
+      \item OpenAPI Generator
+      \item Mapstruct
+      \item AWS
+      \item Distributed hash tables (DHTs)
+  \end{itemize}
+\end{minipage}% 
+%
+\begin{minipage}[t]{0.45\textwidth}
+  \begin{itemize}
+      \item Kubernetes
+      \item Docker \& Docker-compose
+      \item Maven
+      \item RocksDB
+      \item MongoDB
+      \item H2
+  \end{itemize}
+\end{minipage}}
+\\\\
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+\\\\
+%------------------------------------------------
+\entry
+{2013 $\rightarrow$ 2016}
+{\normalfont BEng (Electronic \& Electrical Engineering)}
+{University of Stellenbosch}
+{\textbf{Dissertation: Mininet as a Network Emulator} \\ This dissertation focused on measuring how accurately a network emulator (Mininet) can emulate network effects such as bandwidth limitation, packet loss, delay and jitter}
+%------------------------------------------------
+\\\\
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+\\\\
+\entry
+{2008 $\rightarrow$ 2012}
+{\normalfont National Senior Certificate}
+{Empangeni High School}
+{\textbf{Matriculated with distinctions in:} \\ Information technology, Physical Science, Accounting, Afrikaans First Language, English First Additional Language, Life Orientation}
+%------------------------------------------------
+\newpage
+\newgeometry{left=2cm, bottom=1cm, top=1cm}
+\section{Experience}
+\entry
+{Sept 2022 $\rightarrow$  present}
+{\normalfont Senior Software Engineer @ \textbf{WeTransfer}}
+{Amsterdam, The Netherlands}
+{\textbf{} \\
+As a key player on the Sudo (Core Services) Team, I contribute to the architecture, implementation, and optimization of WeTransfer's storage, upload, and download services, which affect millions of users around the world. Our main challenge as a team, was finding smart solutions to decreasing storage costs (operational \& running costs), reducing carbon emissions of stored data and improving upload \& download performance and stability. Our services play a crucial role in WeTransfer's success,by ensuring that users can \textbf{upload}, \textbf{store} and \textbf{download (share)} data efficiently and securely. This makes us a major contributor to maintaining WeTransfer's cost-efficiency, security, and sustainability standards.
+
+\textbf{Development Stack:}\\
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Golang
+      \item Ruby
+      \item JavaScript \& TypeScript
+      \item Github (Actions)
+      \item Event-Driven Systems
+  \end{itemize}
+\end{minipage}%
+%
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Kubernetes
+      \item Terraform
+      \item AWS (ElasticCache, SQS, SNS, RDS)
+      \item Datadog
+      \item PagerDuty
+  \end{itemize}
+\end{minipage}%
+}
+\\\\\\
+\emph{Reference: Alan Pich (alan@obfu5c8.me / +447782763807)}
+
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+
+\entry
+{Apr 2019 $\rightarrow$ Sep 2022}
+{\normalfont Software Engineer @ \textbf{bol.com}}
+{Utrecht, The Netherlands}
+{\textbf{} \\
+\textbf{Data Science Team (Jun 2022 - Sep 2022)}
+
+As part of the data science team, I assisted in developing a marketing attribution pipeline and machine learning model using first-party data, improving reporting, budgeting, and affiliate payouts for the marketing department.
+
+\textbf{SEO Team (Apr 2019 - Jun 2022)}
+
+As part of the SEO team, I developed high-performance SEO related services to optimize web visibility, specifically through Google, emphasizing clean architecture and robust performance. Our team prioritized customer needs across multiple avenues - from webshop users to API consumers and search engine crawlers. We ensured all features and bug fixes met strict criteria for scalability, security, and future readiness in a rapidly growing e-Commerce environment. Managing hundreds of millions in revenue, our team led technology adoption and spearheaded architectural decisions across the company.
+
+\textbf{Development Stack:}\\
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Java
+      \item Kotlin
+      \item Python
+      \item Bash
+      \item Groovy
+      \item Spring-boot
+      \item Cucumber
+      \item Apache Beam / Apache Airflow
+  \end{itemize}
+\end{minipage}% 
+%
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Kubernetes
+      \item Docker
+      \item Maven
+      \item GitLab
+      \item Jenkins
+      \item Prometheus
+      \item Grafana
+      \item Google Cloud Platform
+  \end{itemize}
+\end{minipage}%
+}
+\\\\\\
+\emph{\textbf{Reference:} Nathalie Neesen (nneesen@bol.com)}
+
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+\newpage
+
+\entry
+{Sep 2017 $\rightarrow$ Mar 2019}
+{\normalfont Systems Developer @ \textbf{Entersekt}}
+{Stellenbosch, South Africa}
+{\\
+As a backend engineer at Entersekt, I worked closely with developers, QA automation engineers, and product owners to enhance Entersekt’s security-focused products. Our team was responsible for the Secure Gateway, enabling banks and security-conscious clients to implement push authentication for transactions. In addition to developing and maintaining AWS AMIs for cloud deployments, we also managed the physical setup of on-premise servers for clients preferring a hardware-first approach, creating automation scripts to streamline installation and provisioning.
+
+\textbf{Development Stack:}\\
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Java
+      \item Bash
+      \item Python
+      \item Apache Cassandra
+  \end{itemize}
+\end{minipage}% 
+%
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Apache Tomcat
+      \item AWS
+      \item Docker
+      \item Maven
+  \end{itemize}
+\end{minipage}%
+}
+\\\\\\
+\emph{\textbf{Reference:} Tertius Wessels (tertius.wessels@gmail.com)}
+
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+
+%----------------------------------------------------------------------------------------
+%	WORK EXPERIENCE SECTION
+%----------------------------------------------------------------------------------------
+\section{Internships}
+\entry
+{Apr 2017 $\rightarrow$ Sep 2017}
+{\normalfont Engineering Intern @ \textbf{Reutech Radar Systems}}
+{Stellenbosch, South Africa}
+{\\
+As an intern at Reutech Radar Systems, I gained hands-on experience across diverse engineering challenges, including high-frequency design and installation, optical processing, solar tracking for Photovoltaic solar panels, and applying systems engineering principles to large-scale projects.
+
+\textbf{Experience:}\newline
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+	\item Systems Engineering
+	\item Professional report writing
+    \item Python
+    \item Data handling \& processing
+\end{itemize}
+\end{minipage}% 
+%
+\begin{minipage}[t]{0.5\textwidth}
+\begin{itemize}
+    \item Software Architecture Design
+    \item Electronic hardware Design
+    \item Firmware Development
+    \item Radio-Frequency Design
+\newline
+\end{itemize}
+\end{minipage}%
+}
+\\\\
+\emph{\textbf{Reference:} Derick Thiart (dthiart@gmail.com)}
+
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+
+
+%----------------------------------------------------------------------------------------
+%	AWARDS SECTION
+%----------------------------------------------------------------------------------------
+
+\section{Notable Projects}
+
+\begin{itemize}
+    \item (WeTransfer) WeGreen Initiative: Achieved a 15\% reduction in total storage costs by co-creating the WeGreen initiative, which proposed changes to the default storage duration for transfers on WeTransfer. This initiative was later adopted company-wide.
+    \item (WeTransfer) Content Scanning Application Optimization: Reduced Kubernetes cluster usage by nearly 20\% and achieved significant cost savings by leading the re-implementation of a legacy Crystal-based content scanning application to a Golang alternative. The original service was responsible for 40\% of total cluster resource usage, which I identified while investigating failing requests.
+\end{itemize}
+
+\section{Leadership \& Social}
+
+\begin{itemize}
+    \item Founder of WeTransfer core-services Un-conference (2023-2024)
+    \item WeTransfer Culture Champion (2024)
+    \item Founder of bol.com Knowledge Nibbles (2020-2022)
+    \item bol.com Fleet Meeting Committee (2019-2020)
+    \item Entersekt Social Committee (2018)
+\end{itemize}
+
+
+
+\end{document}

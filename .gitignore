@@ -1,0 +1,37 @@
+# LaTeX build files
+*.aux
+*.log
+*.out
+*.bcf
+*.run.xml
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.toc
+*.lof
+*.lot
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
+
+# Node modules (if you add any tooling later)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment files
+.env
+.env.local
