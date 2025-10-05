@@ -245,7 +245,7 @@
                 <section class="glass-section discoverable" data-section-id="spotify">
                     <h2 class="section-title">🎵 WHAT I'M LISTENING TO</h2>
                     <div class="spotify-container">
-                        <a href="https://open.spotify.com/playlist/4Bvj1VOm23X4dONyo3KtOA?si=1bc086e88a424890" target="_blank" rel="noopener noreferrer" class="spotify-link">
+                        <div class="spotify-embed">
                             <iframe 
                                 style="border-radius: 12px" 
                                 src="https://open.spotify.com/embed/playlist/4Bvj1VOm23X4dONyo3KtOA?utm_source=generator&theme=0" 
@@ -256,10 +256,12 @@
                                 allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
                                 loading="lazy">
                             </iframe>
-                        </a>
+                        </div>
                         <div class="spotify-footer">
                             <a href="https://open.spotify.com/user/qwmcd02q3idwi7ib8523hq5cq?si=e418bf9dd53640ae" target="_blank" rel="noopener noreferrer" class="spotify-profile-link">
-                                View my Spotify profile →
+                                <span class="spotify-icon">🎧</span>
+                                <span>View my Spotify profile</span>
+                                <span class="arrow">→</span>
                             </a>
                         </div>
                     </div>
@@ -275,7 +277,10 @@
                     
                     <div class="experience-item">
                         <div class="company-logo">
-                            <img src="https://logo.clearbit.com/creativefabrica.com" alt="Creative Fabrica" class="company-logo-img">
+                            <img src="https://logo.clearbit.com/creativefabrica.com" 
+                                 alt="Creative Fabrica" 
+                                 class="company-logo-img"
+                                 data-fallback-emoji="🎨">
                         </div>
                         <div class="exp-header">
                             <span class="exp-title">Senior Software Engineer</span>
@@ -304,7 +309,10 @@
                     
                     <div class="experience-item">
                         <div class="company-logo">
-                            <img src="https://logo.clearbit.com/wetransfer.com" alt="WeTransfer" class="company-logo-img">
+                            <img src="https://logo.clearbit.com/wetransfer.com" 
+                                 alt="WeTransfer" 
+                                 class="company-logo-img"
+                                 data-fallback-emoji="📦">
                         </div>
                         <div class="exp-header">
                             <span class="exp-title">Senior Software Engineer</span>
@@ -336,7 +344,10 @@
 
                     <div class="experience-item">
                         <div class="company-logo">
-                            <img src="https://logo.clearbit.com/bol.com" alt="bol.com" class="company-logo-img">
+                            <img src="https://logo.clearbit.com/bol.com" 
+                                 alt="bol.com" 
+                                 class="company-logo-img"
+                                 data-fallback-emoji="🛒">
                         </div>
                         <div class="exp-header">
                             <span class="exp-title">Software Engineer</span>
@@ -364,7 +375,10 @@
 
                     <div class="experience-item">
                         <div class="company-logo">
-                            <img src="https://logo.clearbit.com/entersekt.com" alt="Entersekt" class="company-logo-img">
+                            <img src="https://logo.clearbit.com/entersekt.com" 
+                                 alt="Entersekt" 
+                                 class="company-logo-img"
+                                 data-fallback-emoji="🔐">
                         </div>
                         <div class="exp-header">
                             <span class="exp-title">Systems Developer</span>
@@ -406,6 +420,21 @@
                             <span class="tech-tag">P2P Networks</span>
                             <span class="tech-tag">Distributed Systems</span>
                             <span class="tech-tag">Kubernetes</span>
+                        </div>
+                        <div class="project-documents">
+                            <div class="documents-label">📄 Publications & Thesis:</div>
+                            <div class="document-links">
+                                <a href="docs/nomad-acmsmall.pdf" target="_blank" class="document-link" download>
+                                    <span class="doc-icon">📝</span>
+                                    <span class="doc-text">Research Paper</span>
+                                    <span class="doc-size">(2.0 MB)</span>
+                                </a>
+                                <a href="docs/stellenbosch_ee_report.pdf" target="_blank" class="document-link" download>
+                                    <span class="doc-icon">🎓</span>
+                                    <span class="doc-text">MEng Thesis</span>
+                                    <span class="doc-size">(7.7 MB)</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div class="project-item">

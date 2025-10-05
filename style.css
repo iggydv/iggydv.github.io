@@ -788,13 +788,22 @@ body {
 }
 
 .achievement-tag {
-    background: rgba(240, 147, 251, 0.2);
-    border: 1px solid rgba(240, 147, 251, 0.3);
-    color: #f093fb;
-    padding: 6px 12px;
-    border-radius: 8px;
+    background: rgba(102, 126, 234, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 12px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    transition: var(--transition-smooth);
+}
+
+.achievement-tag:hover {
+    background: rgba(102, 126, 234, 0.7);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* Notable Projects Section */
@@ -829,13 +838,22 @@ body {
 .project-link {
     font-size: 12px;
     font-weight: 600;
-    color: #667eea;
+    color: white;
     text-decoration: none;
     transition: var(--transition-smooth);
+    background: rgba(102, 126, 234, 0.5);
+    padding: 6px 14px;
+    border-radius: 16px;
+    display: inline-block;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .project-link:hover {
-    color: #764ba2;
+    background: rgba(102, 126, 234, 0.8);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .project-tech {
@@ -843,6 +861,62 @@ body {
     flex-wrap: wrap;
     gap: 8px;
     margin-top: 12px;
+}
+
+/* Project Documents */
+.project-documents {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.documents-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.document-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.document-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(102, 126, 234, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    backdrop-filter: blur(10px);
+}
+
+.document-link:hover {
+    background: rgba(102, 126, 234, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.doc-icon {
+    font-size: 16px;
+}
+
+.doc-text {
+    font-weight: 600;
+}
+
+.doc-size {
+    font-size: 11px;
+    opacity: 0.8;
 }
 
 /* Leadership Section */
@@ -936,45 +1010,60 @@ body {
     gap: 16px;
 }
 
-.spotify-link {
-    display: block;
+.spotify-embed {
     border-radius: 12px;
     overflow: hidden;
     transition: var(--transition-smooth);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.spotify-link:hover {
+.spotify-embed:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.spotify-link iframe {
+.spotify-embed iframe {
     display: block;
 }
 
 .spotify-footer {
     text-align: center;
+    margin-top: 4px;
 }
 
 .spotify-profile-link {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.95);
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
     transition: var(--transition-smooth);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.1);
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .spotify-profile-link:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
     color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.spotify-icon {
+    font-size: 16px;
+}
+
+.spotify-profile-link .arrow {
+    transition: transform 0.3s ease;
+}
+
+.spotify-profile-link:hover .arrow {
     transform: translateX(4px);
 }
 

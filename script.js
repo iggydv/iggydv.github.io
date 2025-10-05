@@ -612,29 +612,56 @@ function activateEasterEgg() {
 function initCompanyLogoFallbacks() {
     const logoImages = document.querySelectorAll('.company-logo-img');
     
-    const fallbackLogos = {
-        'creativefabrica.com': '🎨',
-        'wetransfer.com': '📦',
-        'bol.com': '🛒',
-        'entersekt.com': '🔐'
-    };
-    
     logoImages.forEach(img => {
-        img.addEventListener('error', function() {
-            const domain = this.src.split('logo.clearbit.com/')[1];
-            const fallbackEmoji = fallbackLogos[domain] || '🏢';
-            
-            // Create a fallback element
-            const fallback = document.createElement('div');
-            fallback.style.fontSize = '32px';
-            fallback.style.display = 'flex';
-            fallback.style.alignItems = 'center';
-            fallback.style.justifyContent = 'center';
-            fallback.textContent = fallbackEmoji;
-            
-            // Replace image with fallback
-            this.parentElement.appendChild(fallback);
-            this.style.display = 'none';
+        // Store original src and alternative sources
+        const originalSrc = img.src;
+        const domain = originalSrc.includes('logo.clearbit.com/') 
+            ? originalSrc.split('logo.clearbit.com/')[1] 
+            : '';
+        
+        // Alternative logo sources to try
+        const alternativeSources = domain ? [
+            `https://logo.clearbit.com/${domain}`,
+            `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+            `https://logo.clearbit.com/${domain}?size=200`,
+            `https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${domain}&size=128`
+        ] : [];
+        
+        let attemptIndex = 0;
+        
+        function tryNextSource() {
+            if (attemptIndex < alternativeSources.length) {
+                img.src = alternativeSources[attemptIndex];
+                attemptIndex++;
+            } else {
+                // All sources failed, use emoji fallback
+                const fallbackEmoji = img.dataset.fallbackEmoji || '🏢';
+                
+                // Create a fallback element
+                const fallback = document.createElement('div');
+                fallback.className = 'company-logo-fallback';
+                fallback.style.fontSize = '32px';
+                fallback.style.display = 'flex';
+                fallback.style.alignItems = 'center';
+                fallback.style.justifyContent = 'center';
+                fallback.style.width = '100%';
+                fallback.style.height = '100%';
+                fallback.textContent = fallbackEmoji;
+                
+                // Replace image with fallback
+                img.parentElement.appendChild(fallback);
+                img.style.display = 'none';
+            }
+        }
+        
+        img.addEventListener('error', tryNextSource);
+        
+        // Also check if image loads successfully
+        img.addEventListener('load', function() {
+            // If image is too small (likely a placeholder/error), try next source
+            if (this.naturalWidth < 10 || this.naturalHeight < 10) {
+                tryNextSource();
+            }
         });
     });
 }
