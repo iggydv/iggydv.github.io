@@ -101,7 +101,7 @@
 <body>
     <!-- Discovery Progress Indicator -->
     <div class="discovery-progress" id="discovery-progress">
-        <div class="progress-text">Discovered: <span id="discovered-count">0</span>/<span id="total-sections">9</span></div>
+        <div class="progress-text">Discovered: <span id="discovered-count">0</span>/<span id="total-sections">10</span></div>
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill"></div>
         </div>
@@ -263,6 +263,52 @@
                                 <span>View my Spotify profile</span>
                                 <span class="arrow">→</span>
                             </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Goodreads Books -->
+                <section class="glass-section discoverable" data-section-id="goodreads">
+                    <h2 class="section-title">📚 WHAT I'M READING</h2>
+                    <div class="goodreads-container">
+                        <div class="goodreads-widget">
+                            <div id="goodreads-widget" class="goodreads-books">
+                                <div class="goodreads-loading">Loading books...</div>
+                            </div>
+                        </div>
+                        <div class="goodreads-stats">
+                            <div class="reading-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="books-read">36</span>
+                                    <span class="stat-label">Books Read</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">4.61</span>
+                                    <span class="stat-label">Avg Rating</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="books-to-read">8</span>
+                                    <span class="stat-label">To Read</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="goodreads-footer">
+                            <a href="https://www.goodreads.com/user/show/184024809-iggy-de-villiers" target="_blank" rel="noopener noreferrer" class="goodreads-profile-link">
+                                <span class="goodreads-icon">📖</span>
+                                <span>View my Goodreads profile</span>
+                                <span class="arrow">→</span>
+                            </a>
+                        </div>
+                        <div class="favorite-genres">
+                            <div class="genres-label">Favorite Genres:</div>
+                            <div class="genre-tags">
+                                <span class="genre-tag">Fantasy</span>
+                                <span class="genre-tag">Fiction</span>
+                                <span class="genre-tag">Horror</span>
+                                <span class="genre-tag">Sci-Fi</span>
+                                <span class="genre-tag">Mystery</span>
+                                <span class="genre-tag">Thriller</span>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -515,6 +561,6 @@
     <div class="gradient-bg"></div>
     <canvas id="particles-canvas"></canvas>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=16"></script>
 </body>
 </html>

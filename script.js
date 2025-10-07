@@ -80,6 +80,9 @@ function initPortfolio() {
     // Load GitHub projects
     loadGitHubProjects();
     
+    // Load Goodreads books
+    loadGoodreadsBooks();
+    
     // Initialize animations
     initAnimations();
     
@@ -399,14 +402,21 @@ async function loadGitHubProjects() {
 }
 
 function initCarouselScroll(container) {
-    // Smooth scroll on wheel
+    // Improved scroll for both mouse wheel and trackpad
     container.addEventListener('wheel', (e) => {
         e.preventDefault();
-        container.scrollBy({
-            top: e.deltaY,
-            behavior: 'smooth'
-        });
-    });
+        // Use deltaY directly for more responsive scrolling
+        container.scrollTop += e.deltaY;
+    }, { passive: false });
+}
+
+function initGoodreadsCarouselScroll(container) {
+    // Improved scroll for both mouse wheel and trackpad
+    container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        // Use deltaY directly for more responsive trackpad scrolling
+        container.scrollTop += e.deltaY;
+    }, { passive: false });
 }
 
 function createProjectCard(repo) {
@@ -666,6 +676,276 @@ function activateEasterEgg() {
         message.style.transform = 'translate(-50%, -50%) scale(0.8)';
         setTimeout(() => message.remove(), 500);
     }, 2000);
+}
+
+// Goodreads state for infinite scroll
+const goodreadsState = {
+    userId: '184024809',
+    currentlyReadingBooks: [],
+    readBooks: [],
+    allReadBooks: [],
+    displayedCount: 0,
+    booksPerLoad: 10,
+    isLoading: false,
+    allLoaded: false
+};
+
+// Goodreads Books Integration with infinite scroll
+async function loadGoodreadsBooks() {
+    const container = document.getElementById('goodreads-widget');
+    
+    container.innerHTML = '<div class="goodreads-loading">Loading your books...</div>';
+    
+    console.log('=== GOODREADS FETCH START ===');
+    
+    // Fetch currently-reading and ALL read books in parallel
+    const [currentlyReading, allReadBooks] = await Promise.all([
+        fetchGoodreadsShelf(goodreadsState.userId, 'currently-reading', 50), // Get all currently reading
+        fetchGoodreadsShelf(goodreadsState.userId, 'read', 1000) // Get all read books (max RSS limit)
+    ]);
+    
+    // Store in state
+    goodreadsState.currentlyReadingBooks = currentlyReading;
+    goodreadsState.allReadBooks = allReadBooks;
+    
+    console.log(`✅ Fetched ${currentlyReading.length} currently-reading + ${allReadBooks.length} read books`);
+    
+    if (currentlyReading.length > 0 || allReadBooks.length > 0) {
+        // Display initial batch
+        loadMoreGoodreadsBooks(container, true);
+        
+        // Setup infinite scroll
+        setupGoodreadsInfiniteScroll(container);
+        
+        console.log('=== GOODREADS FETCH END ===');
+    } else {
+        console.error('❌ No books loaded');
+        displayGoodreadsFallback(container);
+    }
+}
+
+// Load more books (for infinite scroll)
+function loadMoreGoodreadsBooks(container, isInitial = false) {
+    if (goodreadsState.isLoading || goodreadsState.allLoaded) return;
+    
+    goodreadsState.isLoading = true;
+    
+    // Get next batch
+    const startIndex = isInitial ? 0 : goodreadsState.displayedCount - goodreadsState.currentlyReadingBooks.length;
+    const endIndex = startIndex + goodreadsState.booksPerLoad;
+    
+    let booksToAdd = [];
+    
+    if (isInitial) {
+        // Initial load: all currently reading + first batch of read books
+        booksToAdd = [
+            ...goodreadsState.currentlyReadingBooks,
+            ...goodreadsState.allReadBooks.slice(0, goodreadsState.booksPerLoad)
+        ];
+        goodreadsState.displayedCount = booksToAdd.length;
+    } else {
+        // Subsequent loads: next batch of read books
+        booksToAdd = goodreadsState.allReadBooks.slice(startIndex, endIndex);
+        goodreadsState.displayedCount += booksToAdd.length;
+    }
+    
+    // Check if all loaded
+    if (goodreadsState.displayedCount >= goodreadsState.currentlyReadingBooks.length + goodreadsState.allReadBooks.length) {
+        goodreadsState.allLoaded = true;
+    }
+    
+    // Append books
+    if (isInitial) {
+        container.innerHTML = '';
+    }
+    
+    booksToAdd.forEach(book => {
+        const bookCard = createGoodreadsBookCard(book);
+        container.appendChild(bookCard);
+    });
+    
+    // Add smooth scroll behavior
+    if (isInitial) {
+        initGoodreadsCarouselScroll(container);
+    }
+    
+    // Add loading indicator if more books available
+    const existingLoader = container.querySelector('.loading-more');
+    if (existingLoader) existingLoader.remove();
+    
+    if (!goodreadsState.allLoaded) {
+        const loader = document.createElement('div');
+        loader.className = 'loading-more';
+        loader.innerHTML = '<div class="goodreads-loading">Scroll for more books...</div>';
+        container.appendChild(loader);
+    } else {
+        const endMessage = document.createElement('div');
+        endMessage.className = 'end-message';
+        endMessage.innerHTML = `<div class="goodreads-loading">All ${goodreadsState.displayedCount} books loaded! 📚</div>`;
+        container.appendChild(endMessage);
+    }
+    
+    goodreadsState.isLoading = false;
+    console.log(`📚 Displayed ${goodreadsState.displayedCount} / ${goodreadsState.currentlyReadingBooks.length + goodreadsState.allReadBooks.length} books`);
+}
+
+// Setup infinite scroll detection
+function setupGoodreadsInfiniteScroll(container) {
+    container.addEventListener('scroll', () => {
+        // Check if near bottom (within 100px)
+        const scrollPosition = container.scrollTop + container.clientHeight;
+        const scrollHeight = container.scrollHeight;
+        
+        if (scrollPosition >= scrollHeight - 100 && !goodreadsState.isLoading && !goodreadsState.allLoaded) {
+            console.log('📖 Loading more books...');
+            loadMoreGoodreadsBooks(container, false);
+        }
+    });
+}
+
+// Create individual book card element
+function createGoodreadsBookCard(book) {
+    const card = document.createElement('a');
+    card.href = book.link;
+    card.target = '_blank';
+    card.rel = 'noopener noreferrer';
+    card.className = `book-card ${book.isCurrentlyReading ? 'currently-reading' : ''}`;
+    
+    card.innerHTML = `
+        <img src="${book.imageUrl || 'https://via.placeholder.com/120x180?text=No+Cover'}" 
+             alt="${book.title}" 
+             class="book-cover"
+             onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'">
+        <div class="book-info">
+            ${book.isCurrentlyReading ? '<div class="reading-badge">📖 Currently Reading</div>' : ''}
+            <div class="book-title">${book.title}</div>
+            <div class="book-author">${book.author}</div>
+            ${book.rating > 0 ? `<div class="book-rating">★ ${book.rating}/5</div>` : ''}
+        </div>
+    `;
+    
+    return card;
+}
+
+// Fetch books from a specific Goodreads shelf with multiple proxy fallbacks
+async function fetchGoodreadsShelf(userId, shelf, limit = 10) {
+    const rssUrl = `https://www.goodreads.com/review/list_rss/${userId}?shelf=${shelf}&sort=date_read`;
+    
+    // Multiple proxy options to try
+    const proxyOptions = [
+        {
+            name: 'AllOrigins (JSON)',
+            url: `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`,
+            parseResponse: async (response) => {
+                const data = await response.json();
+                return data.contents;
+            }
+        },
+        {
+            name: 'CORS Proxy IO',
+            url: `https://corsproxy.io/?${encodeURIComponent(rssUrl)}`,
+            parseResponse: async (response) => {
+                return await response.text();
+            }
+        },
+        {
+            name: 'ThingProxy',
+            url: `https://thingproxy.freeboard.io/fetch/${rssUrl}`,
+            parseResponse: async (response) => {
+                return await response.text();
+            }
+        }
+    ];
+    
+    console.log(`📚 Fetching ${shelf} shelf...`);
+    
+    // Try each proxy
+    for (const proxy of proxyOptions) {
+        try {
+            console.log(`  Trying ${proxy.name}...`);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+            
+            const response = await fetch(proxy.url, {
+                method: 'GET',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const xmlContent = await proxy.parseResponse(response);
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
+            
+            // Check for parsing errors
+            const parseError = xmlDoc.querySelector('parsererror');
+            if (parseError) {
+                throw new Error('XML parsing failed');
+            }
+            
+            const items = xmlDoc.querySelectorAll('item');
+            
+            if (items.length === 0) {
+                throw new Error('No items in feed');
+            }
+            
+            console.log(`  ✓ ${proxy.name}: Found ${items.length} books in ${shelf}`);
+            
+            const books = Array.from(items).slice(0, limit).map(item => {
+                const title = item.querySelector('title')?.textContent || 'Unknown';
+                const author = item.querySelector('author_name')?.textContent || 'Unknown Author';
+                const rating = item.querySelector('user_rating')?.textContent || '0';
+                const imageUrl = item.querySelector('book_large_image_url')?.textContent || 
+                               item.querySelector('book_medium_image_url')?.textContent || 
+                               item.querySelector('book_image_url')?.textContent || '';
+                const link = item.querySelector('link')?.textContent || '#';
+                const isCurrentlyReading = shelf === 'currently-reading';
+                
+                return { title, author, rating, imageUrl, link, isCurrentlyReading };
+            });
+            
+            return books;
+            
+        } catch (error) {
+            console.warn(`  ✗ ${proxy.name} failed:`, error.message);
+            continue; // Try next proxy
+        }
+    }
+    
+    // All proxies failed
+    console.error(`❌ All proxies failed for ${shelf} shelf`);
+    return [];
+}
+
+
+function displayGoodreadsFallback(container) {
+    console.log('📚 Using fallback display');
+    container.innerHTML = `
+        <div class="goodreads-loading" style="text-align: center; padding: 30px;">
+            <p style="margin-bottom: 16px; font-size: 14px;">📚 Unable to load books at the moment</p>
+            <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 12px;">
+                Due to network restrictions, we couldn't fetch your reading list.
+            </p>
+            <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 16px;">
+                36 books read with a 4.61 average rating
+            </p>
+            <a href="https://www.goodreads.com/user/show/184024809-iggy-de-villiers" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               style="display: inline-block; padding: 8px 16px; background: rgba(102, 126, 234, 0.5); 
+                      color: white; text-decoration: none; border-radius: 20px; font-size: 12px; 
+                      transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.2);"
+               onmouseover="this.style.background='rgba(102, 126, 234, 0.7)'"
+               onmouseout="this.style.background='rgba(102, 126, 234, 0.5)'">
+                View My Goodreads Profile →
+            </a>
+        </div>
+    `;
 }
 
 // Company Logo Fallbacks
