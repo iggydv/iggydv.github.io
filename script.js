@@ -197,10 +197,19 @@ function revealAllSections(silent = false) {
         showCelebration();
     }
     
-    // Update progress indicator
+    // Update and then hide progress indicator
     const progressDiv = document.querySelector('.discovery-progress');
     progressDiv.style.background = 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)';
     document.querySelector('.progress-text').textContent = 'All Discovered! 🎉';
+    
+    // Hide the progress meter after a short delay
+    setTimeout(() => {
+        progressDiv.style.opacity = '0';
+        progressDiv.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            progressDiv.style.display = 'none';
+        }, 500);
+    }, 2000);
 }
 
 function showCelebration() {
@@ -695,9 +704,7 @@ async function loadGoodreadsBooks() {
     const container = document.getElementById('goodreads-widget');
     
     container.innerHTML = '<div class="goodreads-loading">Loading your books...</div>';
-    
-    console.log('=== GOODREADS FETCH START ===');
-    
+        
     // Fetch currently-reading and ALL read books in parallel
     const [currentlyReading, allReadBooks] = await Promise.all([
         fetchGoodreadsShelf(goodreadsState.userId, 'currently-reading', 50), // Get all currently reading
@@ -707,8 +714,7 @@ async function loadGoodreadsBooks() {
     // Store in state
     goodreadsState.currentlyReadingBooks = currentlyReading;
     goodreadsState.allReadBooks = allReadBooks;
-    
-    console.log(`✅ Fetched ${currentlyReading.length} currently-reading + ${allReadBooks.length} read books`);
+
     
     if (currentlyReading.length > 0 || allReadBooks.length > 0) {
         // Display initial batch
@@ -717,7 +723,6 @@ async function loadGoodreadsBooks() {
         // Setup infinite scroll
         setupGoodreadsInfiniteScroll(container);
         
-        console.log('=== GOODREADS FETCH END ===');
     } else {
         console.error('❌ No books loaded');
         displayGoodreadsFallback(container);

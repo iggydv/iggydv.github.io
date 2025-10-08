@@ -132,7 +132,7 @@ body {
     border-radius: 16px;
     padding: 16px 24px;
     box-shadow: var(--shadow-md);
-    transition: var(--transition-smooth);
+    transition: opacity 0.5s ease, transform 0.5s ease, background 0.3s ease;
 }
 
 .discovery-progress:hover {
@@ -966,6 +966,37 @@ body {
     white-space: nowrap;
 }
 
+/* ============================================
+   CV DOWNLOAD IN FOOTER
+   ============================================ */
+
+.cv-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+.cv-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+}
+
+.cv-button .cv-icon {
+    font-size: 18px;
+}
+
+.cv-meta-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cv-info {
+    font-size: 12px;
+    color: var(--text-light);
+    opacity: 0.8;
+}
+
 /* Footer */
 .glass-footer {
     text-align: center;
@@ -1463,8 +1494,25 @@ body {
         position: relative;
         left: 0;
         top: 0;
-        margin-bottom: 12px;
-        display: inline-flex;
+    }
+    
+    /* CV Download Mobile */
+    .footer-cta {
+        flex-wrap: wrap;
+    }
+    
+    .cv-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .cv-meta-footer {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+    
+    .cv-info {
+        font-size: 11px;
     }
     
     .goodreads-widget {

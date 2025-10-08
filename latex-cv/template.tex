@@ -19,7 +19,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\documentclass[]{friggeri-cv} % Add 'print' as an option into the square bracket to remove colors from this template for printing
+\documentclass[10pt]{friggeri-cv} % Add 'print' as an option into the square bracket to remove colors from this template for printing
 
 \addbibresource{bibliography.bib} % Specify the bibliography file to include publications
 %------------
@@ -47,7 +47,7 @@
 \textbf{#2}%
     \hfill%
     {\footnotesize\addfontfeature{Color=lightgray} #3}\\%
-    #4\vspace{\parsep}%
+    #4\vspace{0.3\parsep}%
 }
 \newcommand{\RomanNumeralCaps}[1]{\MakeUppercase{\romannumeral #1}}
   
@@ -162,11 +162,41 @@ Development Stack:\\
 \newgeometry{left=2cm, bottom=1cm, top=1cm}
 \section{Experience}
 \entry
-{Sept 2022 $\rightarrow$  present}
+{May 2025 $\rightarrow$  present}
+{\normalfont Senior Software Engineer @ \textbf{Creative Fabrica}}
+{Amsterdam, The Netherlands}
+{\textbf{} \\
+Part of the Social team building Creative Fabrica's social platform, enabling creators to connect, share, and collaborate. Working on scalable microservices architecture to support a growing creative community.
+
+\textbf{Development Stack:}\\
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item Golang
+      \item Kubernetes
+      \item Docker
+      \item Terraform
+  \end{itemize}
+\end{minipage}%
+%
+\begin{minipage}[t]{0.5\textwidth}
+  \begin{itemize}
+      \item AWS
+      \item Kafka
+      \item Event-Driven Systems
+      \item Microservices
+  \end{itemize}
+\end{minipage}%
+}
+\\\\\
+
+\centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+
+\entry
+{Sept 2022 $\rightarrow$ May 2025}
 {\normalfont Senior Software Engineer @ \textbf{WeTransfer}}
 {Amsterdam, The Netherlands}
 {\textbf{} \\
-As a key player on the Sudo (Core Services) Team, I contribute to the architecture, implementation, and optimization of WeTransfer's storage, upload, and download services, which affect millions of users around the world. Our main challenge as a team, was finding smart solutions to decreasing storage costs (operational \& running costs), reducing carbon emissions of stored data and improving upload \& download performance and stability. Our services play a crucial role in WeTransfer's success,by ensuring that users can \textbf{upload}, \textbf{store} and \textbf{download (share)} data efficiently and securely. This makes us a major contributor to maintaining WeTransfer's cost-efficiency, security, and sustainability standards.
+As a key player on the Sudo (Core Services) Team, I contributed to the architecture, implementation, and optimization of WeTransfer's storage, upload, and download services, affecting millions of users worldwide. Our team focused on decreasing storage costs, reducing carbon emissions, and improving upload \& download performance and stability. Our services ensured users could \textbf{upload}, \textbf{store} and \textbf{download (share)} data efficiently and securely, maintaining WeTransfer's cost-efficiency, security, and sustainability standards.
 
 \textbf{Development Stack:}\\
 \begin{minipage}[t]{0.5\textwidth}
@@ -189,8 +219,8 @@ As a key player on the Sudo (Core Services) Team, I contribute to the architectu
   \end{itemize}
 \end{minipage}%
 }
-\\\\\\
-\emph{Reference: Alan Pich (alan@obfu5c8.me / +447782763807)}
+\\\\
+\emph{\small Reference: Alan Pich (alan@obfu5c8.me / +447782763807)}
 
 \centerline{\color{lightgray}\rule{5cm}{0.01cm}}
 
@@ -201,11 +231,11 @@ As a key player on the Sudo (Core Services) Team, I contribute to the architectu
 {\textbf{} \\
 \textbf{Data Science Team (Jun 2022 - Sep 2022)}
 
-As part of the data science team, I assisted in developing a marketing attribution pipeline and machine learning model using first-party data, improving reporting, budgeting, and affiliate payouts for the marketing department.
+Developed a marketing attribution pipeline and machine learning model using first-party data, improving reporting, budgeting, and affiliate payouts for the marketing department.
 
 \textbf{SEO Team (Apr 2019 - Jun 2022)}
 
-As part of the SEO team, I developed high-performance SEO related services to optimize web visibility, specifically through Google, emphasizing clean architecture and robust performance. Our team prioritized customer needs across multiple avenues - from webshop users to API consumers and search engine crawlers. We ensured all features and bug fixes met strict criteria for scalability, security, and future readiness in a rapidly growing e-Commerce environment. Managing hundreds of millions in revenue, our team led technology adoption and spearheaded architectural decisions across the company.
+Developed high-performance SEO services to optimize web visibility through Google, emphasizing clean architecture and robust performance. Our team prioritized customer needs from webshop users to API consumers and search engine crawlers. We ensured all features met strict criteria for scalability, security, and future readiness in a rapidly growing e-Commerce environment managing hundreds of millions in revenue, leading technology adoption and architectural decisions across the company.
 
 \textbf{Development Stack:}\\
 \begin{minipage}[t]{0.5\textwidth}
@@ -234,10 +264,11 @@ As part of the SEO team, I developed high-performance SEO related services to op
   \end{itemize}
 \end{minipage}%
 }
-\\\\\\
-\emph{\textbf{Reference:} Nathalie Neesen (nneesen@bol.com)}
+\\\\
+\emph{\small Reference: Nathalie Neesen (nneesen@bol.com)}
 
 \centerline{\color{lightgray}\rule{5cm}{0.01cm}}
+
 \newpage
 
 \entry
@@ -245,7 +276,7 @@ As part of the SEO team, I developed high-performance SEO related services to op
 {\normalfont Systems Developer @ \textbf{Entersekt}}
 {Stellenbosch, South Africa}
 {\\
-As a backend engineer at Entersekt, I worked closely with developers, QA automation engineers, and product owners to enhance Entersekt’s security-focused products. Our team was responsible for the Secure Gateway, enabling banks and security-conscious clients to implement push authentication for transactions. In addition to developing and maintaining AWS AMIs for cloud deployments, we also managed the physical setup of on-premise servers for clients preferring a hardware-first approach, creating automation scripts to streamline installation and provisioning.
+As a backend engineer at Entersekt, I worked with developers, QA engineers, and product owners to enhance security-focused products. Our team developed the Secure Gateway, enabling banks to implement push authentication for transactions. I developed and maintained AWS AMIs for cloud deployments and managed physical on-premise server setups, creating automation scripts to streamline installation and provisioning.
 
 \textbf{Development Stack:}\\
 \begin{minipage}[t]{0.5\textwidth}
@@ -266,8 +297,8 @@ As a backend engineer at Entersekt, I worked closely with developers, QA automat
   \end{itemize}
 \end{minipage}%
 }
-\\\\\\
-\emph{\textbf{Reference:} Tertius Wessels (tertius.wessels@gmail.com)}
+\\\\
+\emph{\small Reference: Tertius Wessels (tertius.wessels@gmail.com)}
 
 \centerline{\color{lightgray}\rule{5cm}{0.01cm}}
 
@@ -280,7 +311,7 @@ As a backend engineer at Entersekt, I worked closely with developers, QA automat
 {\normalfont Engineering Intern @ \textbf{Reutech Radar Systems}}
 {Stellenbosch, South Africa}
 {\\
-As an intern at Reutech Radar Systems, I gained hands-on experience across diverse engineering challenges, including high-frequency design and installation, optical processing, solar tracking for Photovoltaic solar panels, and applying systems engineering principles to large-scale projects.
+Gained hands-on experience across diverse engineering challenges, including high-frequency design and installation, optical processing, solar tracking for PV solar panels, and applying systems engineering principles to large-scale projects.
 
 \textbf{Experience:}\newline
 \begin{minipage}[t]{0.5\textwidth}
@@ -303,7 +334,7 @@ As an intern at Reutech Radar Systems, I gained hands-on experience across diver
 \end{minipage}%
 }
 \\\\
-\emph{\textbf{Reference:} Derick Thiart (dthiart@gmail.com)}
+\emph{\small Reference: Derick Thiart (dthiart@gmail.com)}
 
 \centerline{\color{lightgray}\rule{5cm}{0.01cm}}
 
