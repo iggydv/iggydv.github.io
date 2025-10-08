@@ -657,6 +657,21 @@ body {
     transform: translateX(4px);
 }
 
+.internship-badge {
+    position: absolute;
+    top: 12px;
+    right: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
+    letter-spacing: 0.5px;
+}
+
 .company-logo {
     position: absolute;
     left: 20px;
@@ -1437,6 +1452,11 @@ body {
     
     .experience-item {
         padding-left: 20px;
+    }
+    
+    .internship-badge {
+        right: 16px;
+        top: 12px;
     }
     
     .company-logo {
