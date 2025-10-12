@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iggy's Journey - World Map</title>
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://iggydv.me/map">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="../favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="../favicon.png">
+    <link rel="shortcut icon" href="../favicon.png">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Header Overlay */
+        .map-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .map-header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin: 0;
+        }
+
+        .back-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        /* Legend */
+        .map-legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-width: 280px;
+            max-width: 320px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        /* Custom scrollbar for legend */
+        .map-legend::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .map-legend::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+
+        .map-legend::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 10px;
+        }
+
+        .map-legend::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        .legend-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            padding-bottom: 10px;
+            z-index: 1;
+        }
+
+        .legend-section {
+            margin-bottom: 20px;
+        }
+
+        .legend-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateX(5px);
+        }
+
+        .legend-item:active {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(3px) scale(0.98);
+        }
+
+        .legend-item-logo {
+            flex-shrink: 0;
+        }
+
+        .legend-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .legend-item-name {
+            font-weight: 500;
+            color: #1a1a1a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .legend-item-period {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .legend-icon {
+            font-size: 24px;
+        }
+
+        /* Custom Popup Styles */
+        .leaflet-popup-content-wrapper {
+            border-radius: 15px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .popup-content {
+            padding: 20px;
+            min-width: 250px;
+        }
+
+        .popup-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .popup-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .popup-type.company {
+            background: #e0e7ff;
+            color: #4c51bf;
+        }
+
+        .popup-type.education {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .popup-period {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .popup-description {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .popup-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .popup-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .map-header {
+                top: 10px;
+                padding: 10px 20px;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                width: auto;
+            }
+
+            .map-header h1 {
+                font-size: 14px;
+            }
+
+            .back-button {
+                font-size: 12px;
+                padding: 6px 15px;
+            }
+
+            .map-legend {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                padding: 12px;
+                min-width: auto;
+                max-width: none;
+                max-height: 40vh;
+            }
+
+            .legend-title {
+                font-size: 14px;
+                margin-bottom: 10px;
+                padding-bottom: 8px;
+            }
+
+            .legend-section-title {
+                font-size: 11px;
+                margin-bottom: 8px;
+            }
+
+            .legend-item {
+                font-size: 11px;
+                gap: 8px;
+                padding: 6px;
+                margin-bottom: 6px;
+            }
+
+            .legend-item-logo .logo-marker {
+                width: 28px !important;
+                height: 28px !important;
+            }
+
+            .legend-item-name {
+                font-size: 12px;
+            }
+
+            .legend-item-period {
+                font-size: 10px;
+            }
+        }
+
+        /* Custom Marker Styles */
+        .custom-marker {
+            background: none;
+            border: none;
+            font-size: 32px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo-marker {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 2px solid white;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .logo-marker:hover {
+            transform: scale(1.1);
+        }
+
+        .logo-marker img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 4px;
+        }
+
+        .education-marker {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            border: 3px solid white;
+            font-size: 28px;
+        }
+
+        .marker-cluster {
+            background-color: rgba(102, 126, 234, 0.6);
+            border-radius: 50%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div class="map-header">
+        <h1>🌍 My Journey Around the World</h1>
+        <a href="../index.html" class="back-button">← Back to Portfolio</a>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-legend" id="map-legend">
+        <div class="legend-title">🗺️ My Journey</div>
+        <!-- Legend content will be dynamically generated -->
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        // Initialize map - centered on Europe (between Netherlands and South Africa)
+        const map = L.map('map', {
+            center: [20, 10],
+            zoom: 2.5,
+            minZoom: 2,
+            maxZoom: 18,
+            zoomControl: true
+        });
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Custom icon creator for company logos
+        function createLogoIcon(logoPath) {
+            return L.divIcon({
+                html: `<div class="logo-marker"><img src="${logoPath}" alt="Company Logo"></div>`,
+                className: '',
+                iconSize: [50, 50],
+                iconAnchor: [25, 50],
+                popupAnchor: [0, -50]
+            });
+        }
+
+        // Custom icon creator for education
+        function createEducationIcon() {
+            return L.divIcon({
+                html: '<div class="education-marker">🎓</div>',
+                className: '',
+                iconSize: [50, 50],
+                iconAnchor: [25, 50],
+                popupAnchor: [0, -50]
+            });
+        }
+
+        // Locations data
+        const locations = [
+            // Companies
+            {
+                name: 'Creative Fabrica',
+                type: 'company',
+                coords: [52.37809685898235, 4.881955683982269], // Amsterdam
+                period: 'May 2025 - Present',
+                position: 'Senior Software Engineer',
+                description: 'Building social platform for creative community',
+                link: 'https://www.creativefabrica.com',
+                logo: '../logos/creativefabrica.png',
+            },
+            {
+                name: 'WeTransfer',
+                type: 'company',
+                coords: [52.37092648045896, 4.885363283981914], // Amsterdam
+                period: 'Sept 2022 - May 2025',
+                position: 'Senior Software Engineer',
+                description: 'Core Services Team - Storage, upload & download services',
+                link: 'https://wetransfer.com',
+                logo: '../logos/wetransfer.png',
+            },
+            {
+                name: 'bol.com',
+                type: 'company',
+                coords: [52.06582425169299, 5.090643639789181], // Utrecht
+                period: 'Apr 2019 - Sep 2022',
+                position: 'Software Engineer',
+                description: 'Data Science & SEO Teams',
+                link: 'https://www.bol.com',
+                logo: '../logos/bol.png',
+            },
+            {
+                name: 'Entersekt',
+                type: 'company',
+                coords: [-33.9656661366005, 18.837472525781664], // Cape Town/Stellenbosch area
+                period: 'Sep 2017 - Mar 2019',
+                position: 'Systems Developer',
+                description: 'Backend engineer on security-focused products',
+                link: 'https://www.entersekt.com',
+                logo: '../logos/entersekt.png',
+            },
+            {
+                name: 'Reutech Radar Systems',
+                type: 'company',
+                coords: [-33.96365861964085, 18.83442131049366],
+                period: 'Apr 2017 - Sep 2017',
+                position: 'Graduate Engineering Intern',
+                description: 'Engineering intern at radar systems company',
+                link: 'https://www.reutechradar.com/',
+                logo: '../logos/reutech.png',
+            },
+            // Education
+            {
+                name: 'University of Stellenbosch',
+                type: 'education',
+                coords: [-33.93268315017857, 18.86444699699924], // Stellenbosch
+                period: '2013 - 2021',
+                position: 'MEng (cum laude) & BEng',
+                description: 'Electronic & Electrical Engineering',
+                link: 'https://www.sun.ac.za',
+                logo: '../logos/stellies.png'
+            }
+        ];
+
+        // Store markers for later reference
+        const markers = {};
+
+        // Add markers to map
+        locations.forEach((location, index) => {
+            const icon = createLogoIcon(location.logo)
+
+            const marker = L.marker(location.coords, {
+                icon: icon,
+            }).addTo(map);
+
+            // Create popup content
+            const popupContent = `
+                <div class="popup-content">
+                    <div class="popup-header">${location.name}</div>
+                    <div class="popup-type ${location.type}">${location.type === 'company' ? '💼 Company' : '🎓 Education'}</div>
+                    <div class="popup-period">${location.period}</div>
+                    <div class="popup-description">
+                        <strong>${location.position}</strong><br>
+                        ${location.description}
+                    </div>
+                    ${location.link ? `<a href="${location.link}" target="_blank" class="popup-link">Visit Website →</a>` : ''}
+                </div>
+            `;
+
+            marker.bindPopup(popupContent, {
+                maxWidth: 300,
+                className: 'custom-popup'
+            });
+
+            // Store marker with unique ID
+            markers[`location-${index}`] = {
+                marker: marker,
+                location: location
+            };
+        });
+
+        // Build legend dynamically
+        function buildLegend() {
+            const legend = document.getElementById('map-legend');
+            const companies = locations.filter(loc => loc.type === 'company');
+            const education = locations.filter(loc => loc.type === 'education');
+
+            let legendHTML = '<div class="legend-title">🗺️ My Journey</div>';
+
+            // Companies section
+            if (companies.length > 0) {
+                legendHTML += '<div class="legend-section">';
+                legendHTML += '<div class="legend-section-title">💼 Companies</div>';
+                companies.forEach((company, idx) => {
+                    const locationIndex = locations.indexOf(company);
+                    legendHTML += `
+                        <div class="legend-item" data-location-id="location-${locationIndex}">
+                            <div class="legend-item-logo">
+                                <div class="logo-marker" style="width: 36px; height: 36px;">
+                                    <img src="${company.logo}" alt="${company.name}" style="width: 100%; height: 100%; object-fit: contain; padding: 2px;">
+                                </div>
+                            </div>
+                            <div class="legend-item-info">
+                                <div class="legend-item-name">${company.name}</div>
+                                <div class="legend-item-period">${company.period}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                legendHTML += '</div>';
+            }
+
+            // Education section
+            if (education.length > 0) {
+                legendHTML += '<div class="legend-section">';
+                legendHTML += '<div class="legend-section-title">🎓 Education</div>';
+                education.forEach((school, idx) => {
+                    const locationIndex = locations.indexOf(school);
+                    legendHTML += `
+                        <div class="legend-item" data-location-id="location-${locationIndex}">
+                            <div class="legend-item-logo">
+                                <div class="logo-marker" style="width: 36px; height: 36px;">
+                                    <img src="${school.logo}" alt="${school.name}" style="width: 100%; height: 100%; object-fit: contain; padding: 2px;">
+                                </div>
+                            </div>
+                            <div class="legend-item-info">
+                                <div class="legend-item-name">${school.name}</div>
+                                <div class="legend-item-period">${school.period}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                legendHTML += '</div>';
+            }
+
+            legend.innerHTML = legendHTML;
+
+            // Add click handlers to legend items
+            document.querySelectorAll('.legend-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const locationId = this.getAttribute('data-location-id');
+                    const markerData = markers[locationId];
+                    
+                    if (markerData) {
+                        // Calculate offset for legend
+                        const isMobile = window.innerWidth <= 768;
+                        let offsetX = 0;
+                        let offsetY = 0;
+
+                        if (!isMobile) {
+                            // On desktop, offset slightly left to account for legend on right
+                            const legendWidth = document.querySelector('.map-legend').offsetWidth;
+                            const mapWidth = map.getContainer().offsetWidth;
+                            offsetX = -(legendWidth / mapWidth) * 0.15;
+                        }
+
+                        // Get the current center point
+                        const targetLatLng = L.latLng(markerData.location.coords);
+                        
+                        // Apply offset
+                        const point = map.project(targetLatLng, 14);
+                        point.x += offsetX * map.getContainer().offsetWidth;
+                        point.y += offsetY * map.getContainer().offsetHeight;
+                        const offsetLatLng = map.unproject(point, 14);
+
+                        // Zoom to marker location with offset
+                        map.flyTo(offsetLatLng, 14, {
+                            animate: true,
+                            duration: 1.5,
+                            easeLinearity: 0.25
+                        });
+                        
+                        // Open popup
+                        setTimeout(() => {
+                            markerData.marker.openPopup();
+                        }, 800);
+                    }
+                });
+            });
+        }
+
+        // Build the legend after markers are added
+        buildLegend();
+
+        // Add connecting lines (optional - creates a path between locations in chronological order)
+        const chronologicalOrder = [
+            [-33.93268315017857, 18.86444699699924], // Stellenbosch (Education start)
+            [-33.96365861964085, 18.83442131049366], // Reutech
+            [-33.9656661366005, 18.837472525781664], // Entersekt
+            [52.06582425169299, 5.090643639789181],   // bol.com
+            [52.37092648045896, 4.885363283981914], // WeTransfer
+            [52.37809685898235, 4.881955683982269],   //Creative Fabrica 
+        ];
+
+        // Draw subtle path
+        const journeyPath = L.polyline(chronologicalOrder, {
+            color: '#667eea',
+            weight: 2,
+            opacity: 0.4,
+            dashArray: '10, 10',
+            smoothFactor: 1
+        }).addTo(map);
+
+        // Fit map to show all markers
+        setTimeout(() => {
+            const group = new L.featureGroup(
+                locations.map(loc => L.marker(loc.coords))
+            );
+            map.fitBounds(group.getBounds().pad(0.2));
+        }, 100);
+    </script>
+</body>
+
+</html>
+

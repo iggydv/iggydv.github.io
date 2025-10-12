@@ -12,4 +12,12 @@
         <priority>1.0</priority>
     </url>
     
+    <!-- Map Page -->
+    <url>
+        <loc>https://iggydv.me/map</loc>
+        <lastmod>2025-10-12</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
 </urlset>

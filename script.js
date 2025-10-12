@@ -496,13 +496,7 @@ function animateSkillBars(section) {
 }
 
 function animateLevelBar() {
-    const levelBar = document.querySelector('.level-fill');
-    if (levelBar) {
-        setTimeout(() => {
-            const level = levelBar.dataset.level;
-            levelBar.style.width = level + '%';
-        }, 500);
-    }
+    // No longer needed - language proficiency display doesn't use bars
 }
 
 // Particles Background
