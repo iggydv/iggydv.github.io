@@ -86,6 +86,9 @@ function initPortfolio() {
     // Initialize animations
     initAnimations();
     
+    // Initialize dynamic text
+    initDynamicText();
+    
     // Initialize particles
     initParticles();
     
@@ -497,6 +500,45 @@ function animateSkillBars(section) {
 
 function animateLevelBar() {
     // No longer needed - language proficiency display doesn't use bars
+}
+
+// Dynamic Text Animation (Apple-style)
+function initDynamicText() {
+    const textElement = document.getElementById('dynamic-text');
+    if (!textElement) return;
+    
+    const phrases = [
+        'Forever in beta',
+        'Sharing knowledge & experience',
+        'Lifelong learner & mentor',
+        'Passionate about tech, people and life',
+    ];
+    
+    let currentIndex = 0;
+    
+    function changeText() {
+        // Fade out
+        textElement.classList.add('fade-out');
+        
+        setTimeout(() => {
+            // Change text
+            currentIndex = (currentIndex + 1) % phrases.length;
+            textElement.textContent = phrases[currentIndex];
+            
+            // Fade in
+            textElement.classList.remove('fade-out');
+            textElement.classList.add('fade-in');
+            
+            setTimeout(() => {
+                textElement.classList.remove('fade-in');
+            }, 800);
+        }, 800);
+    }
+    
+    // Start the cycle after initial delay
+    setTimeout(() => {
+        setInterval(changeText, 4000); // Change every 4 seconds
+    }, 3000); // Wait 3 seconds before starting
 }
 
 // Particles Background
