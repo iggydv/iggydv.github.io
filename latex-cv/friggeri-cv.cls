@@ -77,7 +77,7 @@
   \color{white}%
 }
 
-\newcommand{\header}[3]{%
+\newcommand{\cvheader}[3]{%
   \begin{tikzpicture}[remember picture,overlay]
     \node [rectangle, fill=fillheader, anchor=north, minimum width=\paperwidth, minimum height=4cm] (box) at (current page.north){};
     \node [anchor=center] (name) at (box) {%
@@ -92,6 +92,8 @@
   \vspace{2.5cm}
   \vspace{-2\parskip}
 }
+
+\let\header\cvheader
 
 
 %%%%%%%%%%%%%
