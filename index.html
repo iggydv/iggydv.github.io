@@ -95,9 +95,8 @@
         position:relative;
     }
 
-    /* contour-map backdrop */
-    .contours{position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%}
-    .contours ellipse{fill:none;stroke:var(--ink);stroke-opacity:.07;stroke-width:1.1}
+    /* contour-map backdrop (interactive canvas) */
+    .contours{position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%;display:block}
     .grain{
         position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0.45;mix-blend-mode:multiply;
         background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
@@ -308,24 +307,7 @@
 </head>
 <body>
     <div class="glow"></div>
-    <svg class="contours" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <g transform="rotate(-12 300 260)">
-            <ellipse cx="300" cy="260" rx="50" ry="35"/><ellipse cx="300" cy="260" rx="108" ry="76"/>
-            <ellipse cx="300" cy="260" rx="170" ry="119"/><ellipse cx="300" cy="260" rx="236" ry="165"/>
-            <ellipse cx="300" cy="260" rx="306" ry="214"/><ellipse cx="300" cy="260" rx="380" ry="266"/>
-            <ellipse cx="300" cy="260" rx="458" ry="321"/>
-        </g>
-        <g transform="rotate(16 1160 700)">
-            <ellipse cx="1160" cy="700" rx="60" ry="43"/><ellipse cx="1160" cy="700" rx="124" ry="89"/>
-            <ellipse cx="1160" cy="700" rx="192" ry="138"/><ellipse cx="1160" cy="700" rx="264" ry="190"/>
-            <ellipse cx="1160" cy="700" rx="340" ry="245"/><ellipse cx="1160" cy="700" rx="420" ry="302"/>
-            <ellipse cx="1160" cy="700" rx="504" ry="363"/>
-        </g>
-        <g transform="rotate(-8 1060 130)">
-            <ellipse cx="1060" cy="130" rx="42" ry="33"/><ellipse cx="1060" cy="130" rx="96" ry="75"/>
-            <ellipse cx="1060" cy="130" rx="154" ry="120"/><ellipse cx="1060" cy="130" rx="216" ry="168"/>
-        </g>
-    </svg>
+    <canvas class="contours" id="contours" aria-hidden="true"></canvas>
     <div class="field" id="field" aria-hidden="true"></div>
     <div class="grain"></div>
 
@@ -663,6 +645,82 @@
         },{passive:true});
     })();
 
+    // ---- interactive topographic contour map (cursor = a peak) ----
+    (function(){
+        const cv=document.getElementById('contours'); if(!cv) return;
+        const ctx=cv.getContext('2d');
+        const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+        const CELL=34, INK='21,24,26';
+        // static terrain (normalized coords; a<0 = basin)
+        const peaks=[
+            {x:0.15,y:0.20,a:1.05,r:0.20},{x:0.83,y:0.28,a:0.78,r:0.17},
+            {x:0.72,y:0.82,a:0.98,r:0.24},{x:0.30,y:0.74,a:0.62,r:0.18},
+            {x:0.92,y:0.68,a:0.50,r:0.12},{x:0.50,y:0.46,a:-0.55,r:0.22}
+        ];
+        const LV=[]; for(let l=-0.35;l<=1.75;l+=0.12) LV.push(+l.toFixed(3));
+        const IDX=4;
+        let W,H,dpr,cols,rows,sF,fF;
+        let mx=0.5,my=0.5,cmx=0.5,cmy=0.5,amp=0,ampT=0,raf=null;
+
+        function resize(){
+            dpr=Math.min(window.devicePixelRatio||1,2);
+            W=cv.clientWidth; H=cv.clientHeight;
+            cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+            ctx.setTransform(dpr,0,0,dpr,0,0);
+            cols=Math.ceil(W/CELL)+2; rows=Math.ceil(H/CELL)+2;
+            sF=new Float32Array(cols*rows); fF=new Float32Array(cols*rows);
+            for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+                const nx=(i*CELL)/W, ny=(j*CELL)/H; let h=0;
+                for(const p of peaks){const dx=nx-p.x,dy=ny-p.y;h+=p.a*Math.exp(-(dx*dx+dy*dy)/(2*p.r*p.r));}
+                sF[j*cols+i]=h;
+            }
+            draw();
+        }
+        function draw(){
+            const pr=0.15;
+            for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+                let h=sF[j*cols+i];
+                if(amp>0.002){const dx=(i*CELL)/W-cmx,dy=(j*CELL)/H-cmy;h+=amp*1.55*Math.exp(-(dx*dx+dy*dy)/(2*pr*pr));}
+                fF[j*cols+i]=h;
+            }
+            ctx.clearRect(0,0,W,H);
+            const pN=new Path2D(), pI=new Path2D();
+            for(let li=0;li<LV.length;li++){
+                const L=LV[li], path=(li%IDX===0)?pI:pN;
+                for(let j=0;j<rows-1;j++)for(let i=0;i<cols-1;i++){
+                    const a=fF[j*cols+i],b=fF[j*cols+i+1],c=fF[(j+1)*cols+i+1],d=fF[(j+1)*cols+i];
+                    let st=0; if(a>L)st|=8; if(b>L)st|=4; if(c>L)st|=2; if(d>L)st|=1;
+                    if(st===0||st===15) continue;
+                    const x=i*CELL,y=j*CELL;
+                    const T=[x+CELL*((L-a)/(b-a)),y];
+                    const R=[x+CELL,y+CELL*((L-b)/(c-b))];
+                    const B=[x+CELL*((L-d)/(c-d)),y+CELL];
+                    const Le=[x,y+CELL*((L-a)/(d-a))];
+                    const seg=(p,q)=>{path.moveTo(p[0],p[1]);path.lineTo(q[0],q[1]);};
+                    switch(st){
+                        case 1:seg(Le,B);break; case 2:seg(B,R);break; case 3:seg(Le,R);break;
+                        case 4:seg(T,R);break; case 5:seg(T,Le);seg(B,R);break; case 6:seg(T,B);break;
+                        case 7:seg(T,Le);break; case 8:seg(T,Le);break; case 9:seg(T,B);break;
+                        case 10:seg(T,R);seg(Le,B);break; case 11:seg(T,R);break; case 12:seg(Le,R);break;
+                        case 13:seg(B,R);break; case 14:seg(Le,B);break;
+                    }
+                }
+            }
+            ctx.lineWidth=0.9; ctx.strokeStyle='rgba('+INK+',0.09)'; ctx.stroke(pN);
+            ctx.lineWidth=1.3; ctx.strokeStyle='rgba('+INK+',0.17)'; ctx.stroke(pI);
+        }
+        function frame(){
+            cmx+=(mx-cmx)*0.12; cmy+=(my-cmy)*0.12; amp+=(ampT-amp)*0.08;
+            draw();
+            if(Math.abs(mx-cmx)>0.002||Math.abs(my-cmy)>0.002||Math.abs(ampT-amp)>0.002) raf=requestAnimationFrame(frame); else raf=null;
+        }
+        addEventListener('resize',()=>{clearTimeout(cv._t);cv._t=setTimeout(resize,150)},{passive:true});
+        resize();
+        if(reduce) return;
+        addEventListener('mousemove',e=>{ mx=e.clientX/W; my=e.clientY/H; ampT=1; if(!raf)raf=requestAnimationFrame(frame); },{passive:true});
+        document.addEventListener('mouseleave',()=>{ ampT=0; if(!raf)raf=requestAnimationFrame(frame); });
+    })();
+
     // ---- scroll reveal + meters ----
     const io=new IntersectionObserver((entries)=>{
         entries.forEach(e=>{
@@ -678,20 +736,29 @@
     // ---- live GitHub repos ----
     (async()=>{
         const el=document.getElementById('repos');
+        // curated, in order — with fallback blurbs for repos that have no GitHub description
+        const CURATED=[
+            {n:'nomad',                   d:'P2P distributed storage network for MMVEs — MEng thesis.'},
+            {n:'gomad',                   d:'Go reimplementation of the Nomad P2P storage network.'},
+            {n:'go-fundamentals',         d:'Learning Go — fundamentals, patterns & exercises.'},
+            {n:'inspector-go',            d:'A small Go inspection utility.'},
+            {n:'VoiceGPT'},
+            {n:'Flappy-bird'},
+            {n:'iggydv'},
+            {n:'aws-vod-size-calculator'}
+        ];
         try{
-            const EXCLUDE=new Set(['iggydv.github.io','iggydv']);
-            const r=await fetch('https://api.github.com/users/iggydv/repos?sort=created&direction=desc&per_page=100');
+            const r=await fetch('https://api.github.com/users/iggydv/repos?per_page=100');
             if(!r.ok) throw 0;
-            const repos=(await r.json())
-                .filter(x=>!x.fork && !EXCLUDE.has(x.name))
-                .slice(0,6);
+            const map={}; (await r.json()).forEach(x=>{map[x.name.toLowerCase()]=x});
+            const repos=CURATED.map(c=>({c,x:map[c.n.toLowerCase()]})).filter(o=>o.x);
             if(!repos.length) throw 0;
-            el.innerHTML=repos.map(x=>{
-                const desc=x.description||(x.language? x.language+' project':'Public repository');
+            el.innerHTML=repos.map(({c,x})=>{
+                const desc=x.description||c.d||(x.language? x.language+' project':'Public repository');
                 return `
                 <a class="repo" href="${x.html_url}" target="_blank">
                     <h4>${x.name} <span class="arrow">↗</span></h4>
-                    <p>${desc.slice(0,110)}</p>
+                    <p>${desc.slice(0,120)}</p>
                     <div class="meta">
                         <span>${x.language?`<span class="gdot"></span>${x.language}`:''}</span>
                         <span>★ ${x.stargazers_count}</span>
