@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning · Storage & Messaging Reference</title>
+  <meta name="description" content="Compact storage and messaging reference: when to use which database, queue, or cache, and what tradeoffs to mention.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      background: #0d0f14;
+      color: #e2e8f0;
+    }
+    a {
+      color: #4f8ef7;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .top-bar {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e2330;
+      background: radial-gradient(circle at top left, #1e293b 0, #020617 55%, #020617 100%);
+    }
+    .top-bar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+    .top-bar-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .top-bar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .top-btn {
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #1e293b;
+      background: #020617;
+      color: #e5e7eb;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .top-btn.primary {
+      background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+      border-color: #16a34a;
+      color: #020617;
+      font-weight: 600;
+    }
+    .top-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.55);
+    }
+    .root-wrap {
+      min-height: calc(100vh - 48px);
+      padding: 24px;
+    }
+    @media (max-width: 640px) {
+      .root-wrap {
+        padding: 16px;
+      }
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .top-bar-actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+  <!-- React via CDN for this one-page learning reference -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel so we can use JSX in this standalone page -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">Learning · Storage & Messaging Reference</div>
+      <div class="top-bar-sub">Quick mental model cheatsheet by Iggy de Villiers</div>
+    </div>
+    <div class="top-bar-actions">
+      <a href="/" class="top-btn">
+        ← Back to profile
+      </a>
+      <a href="https://iggydv.me" class="top-btn">
+        iggydv.me
+      </a>
+      <button type="button" class="top-btn primary" onclick="window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })">
+        View key tradeoffs
+      </button>
+    </div>
+  </div>
+  <div id="root" class="root-wrap"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const data = {
+      "Relational DB": {
+        color: "#4f8ef7",
+        icon: "⬛",
+        items: [
+          { name: "PostgreSQL", tags: ["ACID", "joins", "JSON"], use: "Transactional data, complex queries, user records", avoid: "Massive write throughput, unstructured blobs" },
+          { name: "MySQL", tags: ["ACID", "InnoDB", "replication"], use: "Web apps, read replicas, well-understood ops", avoid: "Complex analytical queries" },
+        ]
+      },
+      "Key-Value": {
+        color: "#f76f4f",
+        icon: "🔑",
+        items: [
+          { name: "Redis", tags: ["in-memory", "TTL", "pub/sub"], use: "Cache, sessions, rate limiting, leaderboards, pub/sub", avoid: "Primary store for large datasets" },
+          { name: "DynamoDB", tags: ["managed", "serverless", "single-table"], use: "High-scale, predictable access patterns, serverless", avoid: "Ad-hoc queries, complex joins" },
+        ]
+      },
+      "Document": {
+        color: "#4fbe87",
+        icon: "📄",
+        items: [
+          { name: "MongoDB", tags: ["flexible schema", "BSON", "aggregation"], use: "Nested/variable structure, content management, catalogs", avoid: "Strong ACID transactions across docs" },
+        ]
+      },
+      "Wide-Column": {
+        color: "#c27af7",
+        icon: "🗃️",
+        items: [
+          { name: "Cassandra", tags: ["AP", "partition key", "time-series"], use: "Massive write throughput, time-series, multi-region", avoid: "Joins, flexible queries" },
+          { name: "BigTable", tags: ["GCP", "HBase-API", "analytics"], use: "IoT telemetry, analytics at scale", avoid: "Transactional workloads" },
+        ]
+      },
+      "Search": {
+        color: "#f7c84f",
+        icon: "🔍",
+        items: [
+          { name: "Elasticsearch", tags: ["full-text", "inverted index", "aggregations"], use: "Full-text search, log analytics, autocomplete", avoid: "Primary DB (eventual consistency)" },
+        ]
+      },
+      "Object Storage": {
+        color: "#4fc9f7",
+        icon: "🪣",
+        items: [
+          { name: "S3 / GCS", tags: ["blob", "durable", "cheap"], use: "Static assets, backups, user uploads, data lake", avoid: "Low-latency file access" },
+        ]
+      },
+      "Message Queue": {
+        color: "#f74f7a",
+        icon: "📨",
+        items: [
+          { name: "Kafka", tags: ["log", "replay", "partitions", "high throughput"], use: "Event streaming, audit log, fan-out, decoupling services", avoid: "Simple task queues (overkill)" },
+          { name: "RabbitMQ", tags: ["AMQP", "ACK", "routing"], use: "Task queues, work distribution, retries", avoid: "Event replay / long retention" },
+          { name: "SQS", tags: ["managed", "at-least-once", "FIFO"], use: "Serverless decoupling, managed infra, AWS-native", avoid: "Fan-out to many consumers (use SNS+SQS)" },
+          { name: "SNS", tags: ["pub/sub", "push", "fan-out"], use: "Broadcast to many endpoints (SQS, Lambda, email)", avoid: "Ordered or persistent queuing" },
+        ]
+      },
+      "Cache / CDN": {
+        color: "#f7a44f",
+        icon: "⚡",
+        items: [
+          { name: "Memcached", tags: ["simple", "multi-thread", "no persistence"], use: "Simple caching when you don't need Redis features", avoid: "Persistence, pub/sub, complex data types" },
+          { name: "CDN (CloudFront/Fastly)", tags: ["edge", "latency", "static"], use: "Static assets, global latency, DDoS buffer", avoid: "Dynamic personalized content (without edge logic)" },
+        ]
+      },
+      "NewSQL / Distributed": {
+        color: "#87c24f",
+        icon: "🌐",
+        items: [
+          { name: "CockroachDB / Spanner", tags: ["distributed ACID", "horizontal scale", "SQL"], use: "Global ACID transactions at scale, multi-region", avoid: "Simple workloads (unnecessary complexity)" },
+          { name: "TiDB", tags: ["MySQL compatible", "HTAP"], use: "MySQL drop-in with horizontal scaling + analytics", avoid: "" },
+        ]
+      },
+    };
+
+    const tradeoffs = [
+      { label: "CAP", detail: "Can only guarantee 2 of: Consistency, Availability, Partition tolerance" },
+      { label: "ACID vs BASE", detail: "ACID = strong guarantees (SQL). BASE = eventual consistency (most NoSQL)" },
+      { label: "Read vs Write heavy", detail: "Read heavy → cache + read replicas. Write heavy → sharding, LSM-tree stores (Cassandra)" },
+      { label: "Latency vs Throughput", detail: "Redis/Memcached for μs latency. Kafka for high-throughput async" },
+      { label: "Schema flexibility", detail: "Rigid → relational. Evolving → document / wide-column" },
+      { label: "Retention / Replay", detail: "Need event history? → Kafka. Fire and forget? → SQS/RabbitMQ" },
+    ];
+
+    function StorageRef() {
+      const [active, setActive] = useState(null);
+
+      return (
+        <div
+          style={{
+            background: "#0d0f14",
+            minHeight: "100%",
+            color: "#e2e8f0",
+          }}
+        >
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            {/* Header */}
+            <div style={{ marginBottom: 28 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#4f8ef7",
+                  letterSpacing: 3,
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                }}
+              >
+                Systems Design · Interview Ref
+              </div>
+              <h1
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  margin: 0,
+                  color: "#fff",
+                }}
+              >
+                Storage &amp; Messaging
+              </h1>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#64748b",
+                  marginTop: 4,
+                }}
+              >
+                Click any row for when to use / avoid
+              </div>
+            </div>
+
+            {/* Categories */}
+            {Object.entries(data).map(([category, { color, icon, items }]) => (
+              <div key={category} style={{ marginBottom: 18 }}>
+                <div
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color,
+                    marginBottom: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <span>{icon}</span> {category}
+                </div>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                >
+                  {items.map((item) => {
+                    const key = `${category}-${item.name}`;
+                    const isOpen = active === key;
+                    return (
+                      <div
+                        key={item.name}
+                        onClick={() => setActive(isOpen ? null : key)}
+                        style={{
+                          background: isOpen ? "#1a1f2e" : "#111318",
+                          border: `1px solid ${isOpen ? color + "55" : "#1e2330"}`,
+                          borderRadius: 6,
+                          padding: "10px 14px",
+                          cursor: "pointer",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontWeight: 700,
+                              color: "#fff",
+                              minWidth: 160,
+                              fontSize: 13,
+                            }}
+                          >
+                            {item.name}
+                          </span>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 5,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            {item.tags.map((t) => (
+                              <span
+                                key={t}
+                                style={{
+                                  fontSize: 10,
+                                  padding: "2px 7px",
+                                  borderRadius: 99,
+                                  background: color + "22",
+                                  color,
+                                  border: `1px solid ${color}44`,
+                                }}
+                              >
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        {isOpen && (
+                          <div
+                            style={{
+                              marginTop: 10,
+                              display: "flex",
+                              gap: 20,
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <div style={{ fontSize: 12 }}>
+                              <span
+                                style={{
+                                  color: "#4fbe87",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                ✓ Use for:{" "}
+                              </span>
+                              <span style={{ color: "#94a3b8" }}>
+                                {item.use}
+                              </span>
+                            </div>
+                            {item.avoid && (
+                              <div style={{ fontSize: 12 }}>
+                                <span
+                                  style={{
+                                    color: "#f74f7a",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  ✗ Avoid:{" "}
+                                </span>
+                                <span style={{ color: "#94a3b8" }}>
+                                  {item.avoid}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* Tradeoffs */}
+            <div style={{ marginTop: 30 }}>
+              <div
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  color: "#64748b",
+                  marginBottom: 10,
+                }}
+              >
+                Key Tradeoffs to Mention
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                  gap: 8,
+                }}
+              >
+                {tradeoffs.map(({ label, detail }) => (
+                  <div
+                    key={label}
+                    style={{
+                      background: "#111318",
+                      border: "1px solid #1e2330",
+                      borderRadius: 6,
+                      padding: "10px 14px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: "#f7c84f",
+                        marginBottom: 4,
+                      }}
+                    >
+                      {label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#64748b",
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {detail}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lovable context note */}
+            <div
+              style={{
+                marginTop: 24,
+                padding: "12px 16px",
+                background: "#4f8ef711",
+                border: "1px solid #4f8ef733",
+                borderRadius: 6,
+                fontSize: 11,
+                color: "#94a3b8",
+                lineHeight: 1.6,
+              }}
+            >
+              <span
+                style={{
+                  color: "#4f8ef7",
+                  fontWeight: 700,
+                }}
+              >
+                Lovable context:{" "}
+              </span>
+              FastAPI · PostgreSQL (primary) · Redis (cache/sessions) · Kafka or SQS (async jobs) · S3 (asset storage) · Kubernetes/Azure
+              infra. Expect questions around their LLM generation pipeline: queue depth, fan-out, and idempotency.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const container = document.getElementById("root");
+    const root = ReactDOM.createRoot(container);
+    root.render(<StorageRef />);
+  </script>
+</body>
+</html>
+

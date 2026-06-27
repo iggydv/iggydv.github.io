@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning · Partition &amp; Sharding Reference</title>
+  <meta name="description" content="Partitioning and sharding strategies: when to use range, hash, list, composite, consistent hashing, directory lookups, and more.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      background: #0b0f19;
+      color: #e2e8f0;
+    }
+    a { color: #4f8ef7; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .top-bar {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e2330;
+      background: radial-gradient(circle at top left, #1e293b 0, #020617 55%, #020617 100%);
+    }
+    .top-bar-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+    .top-bar-sub {
+      font-size: 11px;
+      color: #64748b;
+    }
+    .top-bar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .top-btn {
+      font-size: 11px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #1e293b;
+      background: #020617;
+      color: #e5e7eb;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .top-btn.primary {
+      background: linear-gradient(135deg, #38bdf8 0%, #22c55e 100%);
+      border-color: #22c55e;
+      color: #020617;
+      font-weight: 600;
+    }
+    .top-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.55);
+    }
+    .root-wrap {
+      min-height: calc(100vh - 48px);
+      padding: 24px;
+    }
+    @media (max-width: 640px) {
+      .root-wrap { padding: 16px; }
+      .top-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+    }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">Learning · Partition &amp; Sharding Reference</div>
+      <div class="top-bar-sub">How to choose keys and strategies for DBs, Kafka, and SaaS</div>
+    </div>
+    <div class="top-bar-actions">
+      <a href="/" class="top-btn">← Back to profile</a>
+      <a href="/learning/" class="top-btn">← Back to Storage &amp; Messaging</a>
+      <button type="button" class="top-btn primary" onclick="window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })">
+        View decision matrix
+      </button>
+    </div>
+  </div>
+  <div id="root" class="root-wrap"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const partitionStrategies = [
+      {
+        name: "Range partitioning",
+        key: "date / ID range / alpha prefix",
+        use: "Time-series queries, ordered scans, date-based retention (drop old partitions).",
+        works: "Rows with key in [min, max] go to the same partition. Boundaries set manually or auto-split.",
+        avoid: "Hot partitions if recent data dominates. Rebalancing requires adjusting boundaries."
+      },
+      {
+        name: "Hash partitioning",
+        key: "user_id / order_id / high-cardinality key",
+        use: "OLTP write distribution, Kafka producer routing, avoid hotspots.",
+        works: "hash(key) % N determines partition and gives relatively even spread across buckets.",
+        avoid: "Range queries scan all partitions. Adding nodes requires rehash unless using consistent hashing."
+      },
+      {
+        name: "List partitioning",
+        key: "country / region / category / tenant",
+        use: "Multi-tenant isolation, GDPR data residency, region-based routing.",
+        works: "Explicit mapping: value → partition. Each partition owns a defined set of discrete values.",
+        avoid: "Low-cardinality or uneven values cause skew; harder to add new values without rebalancing."
+      },
+      {
+        name: "Composite (Range-Hash)",
+        key: "(date, user_id) or (tenant, id)",
+        use: "Time + entity queries (e.g. all events for user X in March).",
+        works: "First key prunes candidate partitions (range), second key hashes within survivors.",
+        avoid: "Queries must include the leading key. Schema/query complexity increases."
+      },
+      {
+        name: "Round-robin",
+        key: "None (positional)",
+        use: "Write throughput maximisation, bulk loads when you don't care about locality.",
+        works: "Records distributed 0,1,2…N−1,0,1… with no key required.",
+        avoid: "No locality at all; aggregations must touch every partition."
+      },
+      {
+        name: "Kafka-style keyed",
+        key: "message key (string/bytes)",
+        use: "Event streams requiring per-entity ordering (payments, user actions, CDC).",
+        works: "hash(key) % numPartitions; same key → same partition, preserving per-key order.",
+        avoid: "Null keys become round-robin (lose ordering). Key skew (viral user) creates laggy partitions."
+      }
+    ];
+
+    const shardingStrategies = [
+      {
+        name: "Hash sharding",
+        key: "user_id / account_id / UUID",
+        use: "OLTP user-centric reads/writes where even load is the main goal.",
+        works: "shard = hash(key) % N; no ordering between shards, but good distribution.",
+        avoid: "Re-sharding requires migrating most data; cross-shard transactions are expensive."
+      },
+      {
+        name: "Consistent hashing",
+        key: "Any key mapped onto a hash ring",
+        use: "Elastic clusters (Cassandra, DynamoDB, Redis Cluster) with frequent scale events.",
+        works: "Keys and nodes live on a ring; key belongs to the next clockwise node. Adding/removing nodes moves only a slice of keys.",
+        avoid: "Requires virtual nodes for even load; uneven keyspace still causes hotspots."
+      },
+      {
+        name: "Range sharding",
+        key: "timestamp / alpha-sorted ID",
+        use: "Range scans and time-windowed queries (HBase, MongoDB chunks).",
+        works: "Contiguous key ranges are mapped to shards via a routing table.",
+        avoid: "Monotonic keys (timestamps, UUIDv1) all hit a single shard unless you randomise / hash prefixes."
+      },
+      {
+        name: "Directory / lookup",
+        key: "tenant_id / customer_id",
+        use: "Multi-tenant SaaS with arbitrary placement and isolating large tenants.",
+        works: "Central lookup: key → shard for full flexibility in mapping.",
+        avoid: "Lookup table must be highly available and cached; it's a potential bottleneck / SPOF."
+      },
+      {
+        name: "Geo / zone sharding",
+        key: "region / country code / lat-lng bucket",
+        use: "Latency-sensitive apps, data sovereignty, multi-region active-active setups.",
+        works: "Data is placed near origin region, often combined with hash or range within region.",
+        avoid: "Cross-region queries are expensive; uneven regional growth causes skew."
+      },
+      {
+        name: "Entity-group / colocated",
+        key: "root entity ID (org_id, tenant_id)",
+        use: "Strong consistency within an entity group (Spanner, Vitess, CockroachDB).",
+        works: "All related rows (org + users + orders) share the same shard via a common root key.",
+        avoid: "Whale tenants hotspot a shard; you need split/overflow strategies for very large entities."
+      }
+    ];
+
+    const keySelection = [
+      {
+        property: "Write distribution",
+        good: "user_id, UUID, other high-cardinality keys.",
+        bad: "created_at, auto-increment IDs.",
+        risk: "Sequential keys funnel all writes into a single shard or partition.",
+        note: "Prefix-hash or use UUIDv7-style IDs. For Kafka, use entity IDs rather than null keys."
+      },
+      {
+        property: "Read locality (single entity)",
+        good: "Shard key matches main lookup key (e.g. user_id for 'all orders for user').",
+        bad: "Unrelated field as shard key.",
+        risk: "Scatter-gather reads across many shards.",
+        note: "Design shard key around dominant access patterns, not just write distribution."
+      },
+      {
+        property: "Cardinality",
+        good: "Cardinality ≫ shard count or effectively continuous.",
+        bad: "Boolean/status/country with only a few values.",
+        risk: "Partition skew and hot shards.",
+        note: "Combine low-cardinality fields with a high-entropy suffix (e.g. (country, user_id))."
+      },
+      {
+        property: "Query pattern (ranges)",
+        good: "Separate shard key and sort key.",
+        bad: "Using range/sort key alone as the shard key.",
+        risk: "All range scans hit a single shard.",
+        note: "DynamoDB pattern: partition key=user_id, sort key=timestamp so scans stay local."
+      },
+      {
+        property: "Multi-tenancy (whale tenants)",
+        good: "tenant_id + sub-shard suffix, or overflow shards for big tenants.",
+        bad: "Bare tenant_id as sole shard key.",
+        risk: "Large tenants dominate a single shard.",
+        note: "Detect 'whales' and split them: tenant_id#0, tenant_id#1, etc."
+      },
+      {
+        property: "Immutability of key",
+        good: "Immutable IDs that never change post-insert.",
+        bad: "Mutable fields (email, status) as shard keys.",
+        risk: "Every update requires cross-shard migrations.",
+        note: "Shard key changes are effectively DELETE + INSERT; avoid them in hot paths."
+      },
+      {
+        property: "Join / transaction scope",
+        good: "Same root shard key across related tables.",
+        bad: "Different shard keys per table.",
+        risk: "Distributed transactions and expensive cross-shard joins.",
+        note: "Colocate data that participates in the same transactional boundaries."
+      }
+    ];
+
+    const scenarios = [
+      {
+        title: "Kafka event stream, per-entity ordering",
+        strategy: "Kafka-style keyed partitioning",
+        key: "user_id / entity_id as message key",
+        watch: "Null keys lose ordering; use a stable entity key instead."
+      },
+      {
+        title: "PostgreSQL time-series / IoT",
+        strategy: "Range partitioning on event_time",
+        key: "event_time / created_at",
+        watch: "Recent partitions get hot; pre-create future partitions and monitor skew."
+      },
+      {
+        title: "Multi-tenant SaaS database",
+        strategy: "List or directory sharding on tenant_id",
+        key: "tenant_id (optionally with suffix for big tenants)",
+        watch: "Whale tenants; layer an overflow or suffix strategy."
+      },
+      {
+        title: "Global user DB with elastic scale",
+        strategy: "Consistent hashing with vnodes",
+        key: "user_id",
+        watch: "Ensure enough virtual nodes (e.g. 100s per node) to smooth distribution."
+      },
+      {
+        title: "E‑commerce orders (user + date)",
+        strategy: "Composite range-hash",
+        key: "(user_id, order_date)",
+        watch: "Queries must filter on user_id first to prune shards effectively."
+      },
+      {
+        title: "DynamoDB single-table design",
+        strategy: "Hash + sort key",
+        key: "PK = entity, SK = type#date",
+        watch: "Hot partitions above WCU limits; add random suffix or buckets."
+      }
+    ];
+
+    function Section({ title, subtitle, children }) {
+      return (
+        <section style={{ marginBottom: 28 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: "#64748b",
+              textTransform: "uppercase",
+              letterSpacing: 3,
+              marginBottom: 4,
+            }}
+          >
+            {subtitle}
+          </div>
+          <h2
+            style={{
+              margin: 0,
+              marginBottom: 10,
+              fontSize: 18,
+              color: "#e5e7eb",
+            }}
+          >
+            {title}
+          </h2>
+          {children}
+        </section>
+      );
+    }
+
+    function Pill({ label }) {
+      return (
+        <span
+          style={{
+            display: "inline-block",
+            fontSize: 10,
+            padding: "2px 8px",
+            borderRadius: 999,
+            border: "1px solid #1f2937",
+            background: "#020617",
+            color: "#9ca3af",
+            marginRight: 6,
+          }}
+        >
+          {label}
+        </span>
+      );
+    }
+
+    function Card({ title, tags = [], children, accent = "#38bdf8" }) {
+      return (
+        <div
+          style={{
+            background: "#020617",
+            borderRadius: 8,
+            border: "1px solid #1e293b",
+            padding: "12px 14px",
+            marginBottom: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 6,
+              gap: 8,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#e5e7eb",
+              }}
+            >
+              {title}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+              {tags.map((t) => (
+                <span
+                  key={t}
+                  style={{
+                    fontSize: 9,
+                    padding: "2px 6px",
+                    borderRadius: 999,
+                    border: `1px solid ${accent}44`,
+                    background: `${accent}11`,
+                    color: accent,
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div style={{ fontSize: 11, color: "#9ca3af", lineHeight: 1.5 }}>
+            {children}
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [openSection, setOpenSection] = useState("partition");
+
+      return (
+        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+          <div style={{ marginBottom: 24 }}>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#4f46e5",
+                letterSpacing: 3,
+                textTransform: "uppercase",
+                marginBottom: 4,
+              }}
+            >
+              Mental models
+            </div>
+            <p
+              style={{
+                fontSize: 12,
+                color: "#9ca3af",
+                margin: 0,
+                lineHeight: 1.6,
+              }}
+            >
+              A compact reference for how to partition and shard data across tables, topics, and nodes,
+              and how to pick good keys for your workload.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "inline-flex",
+              background: "#020617",
+              borderRadius: 999,
+              border: "1px solid #1e293b",
+              padding: 3,
+              marginBottom: 20,
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setOpenSection("partition")}
+              style={{
+                fontSize: 11,
+                padding: "5px 12px",
+                borderRadius: 999,
+                border: "none",
+                cursor: "pointer",
+                background:
+                  openSection === "partition"
+                    ? "linear-gradient(135deg, #38bdf8, #4f46e5)"
+                    : "transparent",
+                color: openSection === "partition" ? "#020617" : "#9ca3af",
+              }}
+            >
+              Partitioning strategies
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpenSection("sharding")}
+              style={{
+                fontSize: 11,
+                padding: "5px 12px",
+                borderRadius: 999,
+                border: "none",
+                cursor: "pointer",
+                background:
+                  openSection === "sharding"
+                    ? "linear-gradient(135deg, #22c55e, #16a34a)"
+                    : "transparent",
+                color: openSection === "sharding" ? "#020617" : "#9ca3af",
+              }}
+            >
+              Sharding &amp; scaling out
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpenSection("keys")}
+              style={{
+                fontSize: 11,
+                padding: "5px 12px",
+                borderRadius: 999,
+                border: "none",
+                cursor: "pointer",
+                background:
+                  openSection === "keys"
+                    ? "linear-gradient(135deg, #f97316, #ea580c)"
+                    : "transparent",
+                color: openSection === "keys" ? "#020617" : "#9ca3af",
+              }}
+            >
+              Picking keys &amp; scenarios
+            </button>
+          </div>
+
+          {openSection === "partition" && (
+            <Section
+              title="Partitioning strategies (tables, topics, file systems)"
+              subtitle="DB tables · Kafka topics · file systems"
+            >
+              {partitionStrategies.map((s) => (
+                <Card
+                  key={s.name}
+                  title={s.name}
+                  tags={[s.key]}
+                  accent="#38bdf8"
+                >
+                  <div style={{ marginBottom: 4 }}>
+                    <Pill label="How it works" />
+                    <span>{s.works}</span>
+                  </div>
+                  <div style={{ marginBottom: 4 }}>
+                    <Pill label="Use when" />
+                    <span>{s.use}</span>
+                  </div>
+                  <div>
+                    <Pill label="Avoid / gotchas" />
+                    <span>{s.avoid}</span>
+                  </div>
+                </Card>
+              ))}
+            </Section>
+          )}
+
+          {openSection === "sharding" && (
+            <Section
+              title="Sharding strategies (horizontal scaling across nodes)"
+              subtitle="Scale databases, caches, and services"
+            >
+              {shardingStrategies.map((s) => (
+                <Card
+                  key={s.name}
+                  title={s.name}
+                  tags={[s.key]}
+                  accent="#22c55e"
+                >
+                  <div style={{ marginBottom: 4 }}>
+                    <Pill label="How it works" />
+                    <span>{s.works}</span>
+                  </div>
+                  <div style={{ marginBottom: 4 }}>
+                    <Pill label="Use when" />
+                    <span>{s.use}</span>
+                  </div>
+                  <div>
+                    <Pill label="Avoid / gotchas" />
+                    <span>{s.avoid}</span>
+                  </div>
+                </Card>
+              ))}
+            </Section>
+          )}
+
+          {openSection === "keys" && (
+            <>
+              <Section
+                title="Shard / partition key selection"
+                subtitle="Decision guide"
+              >
+                {keySelection.map((k) => (
+                  <Card
+                    key={k.property}
+                    title={k.property}
+                    tags={[]}
+                    accent="#f97316"
+                  >
+                    <div style={{ marginBottom: 4 }}>
+                      <Pill label="Good choice" />
+                      <span>{k.good}</span>
+                    </div>
+                    <div style={{ marginBottom: 4 }}>
+                      <Pill label="Bad choice" />
+                      <span>{k.bad}</span>
+                    </div>
+                    <div style={{ marginBottom: 4 }}>
+                      <Pill label="Risk" />
+                      <span>{k.risk}</span>
+                    </div>
+                    <div>
+                      <Pill label="Notes / examples" />
+                      <span>{k.note}</span>
+                    </div>
+                  </Card>
+                ))}
+              </Section>
+
+              <Section
+                title="Quick decision matrix"
+                subtitle="Common scenarios"
+              >
+                {scenarios.map((s) => (
+                  <Card
+                    key={s.title}
+                    title={s.title}
+                    tags={[s.strategy, s.key]}
+                    accent="#a855f7"
+                  >
+                    <div>
+                      <Pill label="Watch out for" />
+                      <span>{s.watch}</span>
+                    </div>
+                  </Card>
+                ))}
+              </Section>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    const container = document.getElementById("root");
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+  </script>
+</body>
+</html>
+
