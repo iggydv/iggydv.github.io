@@ -263,6 +263,18 @@
     .repo .meta .gdot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;vertical-align:middle}
     .repo-loading{padding:30px;font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);grid-column:1/-1;background:var(--paper)}
 
+    /* ============ WRITING ============ */
+    .post{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:baseline;padding:28px 12px;border-top:1px solid var(--line);transition:background .4s,padding .4s}
+    .post:last-of-type{border-bottom:1px solid var(--line)}
+    .post:hover{background:var(--paper-2);padding-left:24px;padding-right:24px}
+    .post .pt{font-size:1.45rem;font-weight:600;letter-spacing:-0.015em;line-height:1.2;transition:color .3s}
+    .post:hover .pt{color:var(--blue)}
+    .post .pt .arrow{color:var(--blue);display:inline-block;transition:transform .3s}
+    .post:hover .pt .arrow{transform:translate(3px,-3px)}
+    .post .pd{color:var(--ink-soft);font-size:14.5px;line-height:1.6;margin-top:10px;max-width:68ch}
+    .post .pwhen{font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;padding-top:6px}
+    .writing-more{font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--blue);display:inline-flex;gap:6px;margin-top:28px}
+
     /* ============ FOOTER ============ */
     footer{position:relative;z-index:2;padding:160px 0 60px;margin-top:160px;border-top:1px solid var(--line)}
     .foot-big{font-size:clamp(2.2rem,7vw,5.5rem);font-weight:600;letter-spacing:-0.03em;line-height:0.95;margin-bottom:48px}
@@ -340,6 +352,7 @@
                 <a href="#now">Now</a>
                 <a href="#work">Work</a>
                 <a href="#projects">Projects</a>
+                <a href="#writing">Writing</a>
                 <a href="#info">Info</a>
             </div>
         </div>
@@ -538,10 +551,28 @@
         <div id="repos" class="r"><div class="repo-loading">Loading repositories…</div></div>
     </section>
 
+    <!-- ================= WRITING ================= -->
+    <section id="writing" class="wrap">
+        <div class="sec-head r">
+            <span class="idx">06</span>
+            <h2>Selected <em>writing</em></h2>
+        </div>
+        <div class="r">
+            <a class="post" href="https://www.linkedin.com/pulse/wtf-google-zanzibar-ignatius-de-villiers-y5cff/" target="_blank" rel="noopener">
+                <div>
+                    <div class="pt">WTF is Google Zanzibar <span class="arrow">↗</span></div>
+                    <div class="pd">A plain-language deep-dive into Google's Zanzibar — the relationship-based access control (ReBAC) system that powers authorization across Google Drive, Photos and YouTube at planetary scale.</div>
+                </div>
+                <div class="pwhen">LinkedIn</div>
+            </a>
+        </div>
+        <a class="writing-more" href="https://www.linkedin.com/in/iggydv/recent-activity/articles/" target="_blank" rel="noopener">All articles on LinkedIn →</a>
+    </section>
+
     <!-- ================= BEYOND ================= -->
     <section class="wrap">
         <div class="sec-head r">
-            <span class="idx">06</span>
+            <span class="idx">07</span>
             <h2>Beyond <em>the terminal</em></h2>
         </div>
         <div class="beyond r">
